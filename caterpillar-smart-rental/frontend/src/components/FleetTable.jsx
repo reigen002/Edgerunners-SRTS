@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { StatusPill } from "./StatusPill";
-import { SEVERITY_EDGE } from "../lib/format";
+import { StatusPill, SeverityPill } from "./StatusPill";
+import { SEVERITY_BAR, SEVERITY_WASH } from "../lib/format";
+import { ANOMALY_THRESHOLDS as T } from "../mock/seed";
 
 const severityRank = { HIGH: 0, MEDIUM: 1, LOW: 2, null: 3 };
 const columns = [
@@ -14,6 +15,18 @@ const columns = [
   { key: "idle_hours_per_day", label: "Idle hrs/day" },
   { key: "highest_severity", label: "Alerts" },
 ];
+
+function utilTone(pct) {
+  if (pct < T.low_utilization_severe_pct) return "text-signal-high font-semibold";
+  if (pct < T.low_utilization_pct) return "text-signal-medium";
+  return "text-ink-dim";
+}
+
+function idleTone(hrs) {
+  if (hrs >= T.excessive_idle_severe_hours) return "text-signal-high font-semibold";
+  if (hrs >= T.excessive_idle_hours) return "text-signal-medium";
+  return "text-ink-dim";
+}
 
 export function FleetTable({ assets }) {
   const navigate = useNavigate();
@@ -47,15 +60,19 @@ export function FleetTable({ assets }) {
   }
 
   return (
-    <div className="overflow-x-auto border border-hairline bg-panel">
-      <table className="w-full min-w-[720px] border-collapse text-sm">
+    <div className="overflow-x-auto border border-hairline bg-panel shadow-[var(--shadow-panel)]">
+      <div className="flex items-center justify-between border-b border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <span>Fleet</span>
+        <span>{assets.length} assets · sorted by severity</span>
+      </div>
+      <table className="w-full min-w-[760px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-hairline text-left">
             {columns.map((c) => (
               <th
                 key={c.key}
                 onClick={() => toggleSort(c.key)}
-                className="cursor-pointer select-none whitespace-nowrap px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-ink-faint hover:text-ink-dim"
+                className="cursor-pointer select-none whitespace-nowrap px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint hover:text-ink-dim"
               >
                 {c.label}{sortKey === c.key ? (sortDir === 1 ? " ↑" : " ↓") : ""}
               </th>
@@ -67,17 +84,30 @@ export function FleetTable({ assets }) {
             <tr
               key={a.equipment_id}
               onClick={() => navigate(`/asset/${a.equipment_id}`)}
-              className={`cursor-pointer border-b border-hairline border-l-2 last:border-b-0 hover:bg-panel-raised ${SEVERITY_EDGE[a.highest_severity] ?? "border-l-transparent"}`}
+              className={`relative cursor-pointer border-b border-hairline last:border-b-0 hover:bg-panel-raised ${SEVERITY_WASH[a.highest_severity] ?? ""}`}
             >
-              <td className="whitespace-nowrap px-3 py-2 font-mono text-ink">{a.equipment_id}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{a.type}</td>
-              <td className="whitespace-nowrap px-3 py-2"><StatusPill status={a.status} /></td>
-              <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{a.site_name ?? "Unassigned"}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{a.operator_name ?? "Unassigned"}</td>
-              <td className="whitespace-nowrap px-3 py-2 font-mono tabular-nums text-ink-dim">{a.utilization_pct}%</td>
-              <td className="whitespace-nowrap px-3 py-2 font-mono tabular-nums text-ink-dim">{a.idle_hours_per_day}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-ink-dim">
-                {a.anomaly_count > 0 ? `${a.anomaly_count} · ${a.highest_severity}` : "—"}
+              <td className="relative whitespace-nowrap px-3 py-2.5 font-mono font-medium text-ink">
+                <span className={`absolute inset-y-0 left-0 w-1 ${SEVERITY_BAR[a.highest_severity] ?? "bg-transparent"}`} />
+                <span className="pl-1.5">{a.equipment_id}</span>
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 text-ink-dim">{a.type}</td>
+              <td className="whitespace-nowrap px-3 py-2.5"><StatusPill status={a.status} /></td>
+              <td className="whitespace-nowrap px-3 py-2.5 text-ink-dim">
+                {a.site_name ?? <span className="text-signal-high">Unassigned</span>}
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 text-ink-dim">
+                {a.operator_name ?? <span className="text-signal-high">Unassigned</span>}
+              </td>
+              <td className={`whitespace-nowrap px-3 py-2.5 font-mono tabular-nums ${utilTone(a.utilization_pct)}`}>{a.utilization_pct}%</td>
+              <td className={`whitespace-nowrap px-3 py-2.5 font-mono tabular-nums ${idleTone(a.idle_hours_per_day)}`}>{a.idle_hours_per_day}</td>
+              <td className="whitespace-nowrap px-3 py-2.5">
+                {a.anomaly_count > 0 ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <SeverityPill severity={a.highest_severity} /> <span className="text-[12px] text-ink-faint">×{a.anomaly_count}</span>
+                  </span>
+                ) : (
+                  <span className="text-ink-faint">—</span>
+                )}
               </td>
             </tr>
           ))}

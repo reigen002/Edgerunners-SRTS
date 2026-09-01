@@ -20,11 +20,11 @@ export function CheckInOutModal({ mode, assetId, onClose, onSubmit }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={submit}
-        className="w-full max-w-md border border-hairline-strong bg-panel p-4"
+        className="w-full max-w-md border border-hairline-strong bg-panel p-4 shadow-[var(--shadow-hero)]"
       >
         <div className="flex items-center justify-between border-b border-hairline pb-3">
           <h2 className="text-sm font-medium text-ink">

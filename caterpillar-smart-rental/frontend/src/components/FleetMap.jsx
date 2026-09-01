@@ -12,9 +12,14 @@ function severityColor(sev) {
 export function FleetMap({ sites, assets, trace }) {
   const navigate = useNavigate();
   return (
-    <div className="border border-hairline bg-panel">
-      <div className="border-b border-hairline px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-        Site &amp; Fleet Map
+    <div className="border border-hairline bg-panel shadow-[var(--shadow-panel)]">
+      <div className="flex items-center justify-between border-b border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <span>Site &amp; Fleet Map</span>
+        <span className="flex items-center gap-2.5 normal-case tracking-normal text-ink-faint">
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-signal-high" />High</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-signal-medium" />Med</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-signal-low" />Info</span>
+        </span>
       </div>
       <MapContainer center={SITE_CENTER} zoom={11} scrollWheelZoom={false} className="h-72 w-full">
         <TileLayer

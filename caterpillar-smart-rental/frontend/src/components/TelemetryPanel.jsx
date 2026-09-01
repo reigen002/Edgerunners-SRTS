@@ -5,9 +5,9 @@ const FRAME_MS = 350;
 
 function Gauge({ label, value, unit, warn }) {
   return (
-    <div className="border border-hairline bg-panel-raised px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-ink-faint">{label}</div>
-      <div className={`mt-0.5 font-mono text-lg tabular-nums ${warn ? "text-signal-high" : "text-ink"}`}>
+    <div className={`border px-3 py-2 ${warn ? "border-signal-high/40 bg-signal-high/[0.06]" : "border-hairline bg-panel-raised"}`}>
+      <div className="text-[10px] font-medium uppercase tracking-wide text-ink-faint">{label}</div>
+      <div className={`mt-0.5 font-mono text-xl font-semibold tabular-nums ${warn ? "text-signal-high" : "text-ink"}`}>
         {value}{unit}
       </div>
     </div>
@@ -45,9 +45,9 @@ export function TelemetryPanel({ frames, onFrame }) {
   }
 
   return (
-    <div className="border border-hairline bg-panel p-3">
+    <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           <IconGauge /> Live Telemetry Playback
         </div>
         <div className="flex items-center gap-2">
@@ -79,7 +79,8 @@ export function TelemetryPanel({ frames, onFrame }) {
         <Gauge label="Seatbelt" value={frame.seatbelt} unit="" warn={frame.seatbelt === "OFF"} />
       </div>
       {frame.fault_code && (
-        <div className="mt-2 border border-signal-high/40 bg-signal-high/10 px-3 py-1.5 font-mono text-xs text-signal-high">
+        <div className="mt-2 flex items-center gap-2 border border-signal-high/50 bg-signal-high/[0.08] px-3 py-2 font-mono text-xs font-semibold tracking-wide text-signal-high">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal-high" />
           FAULT: {frame.fault_code}
         </div>
       )}

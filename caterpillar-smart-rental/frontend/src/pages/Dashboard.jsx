@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import { KpiTile } from "../components/KpiTile";
+import { KpiCluster } from "../components/KpiTile";
+import { HeroAssetPanel } from "../components/HeroAssetPanel";
 import { FleetTable } from "../components/FleetTable";
 import { AlertsFeed } from "../components/AlertsFeed";
 import { FleetMap } from "../components/FleetMap";
 import { ForecastPanel } from "../components/ForecastPanel";
 import { RecommendationPanel } from "../components/RecommendationPanel";
+
+const severityRank = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
 export function Dashboard() {
   const [assets, setAssets] = useState(null);
@@ -29,14 +32,25 @@ export function Dashboard() {
   const avgUtilization = Math.round(assets.reduce((s, a) => s + a.utilization_pct, 0) / assets.length);
   const risingForecast = forecasts.find((f) => f && f.forecast[0].count >= f.history[f.history.length - 1].count) ?? forecasts[0];
 
+  const heroAsset = [...assets]
+    .filter((a) => a.highest_severity)
+    .sort((a, b) => (severityRank[a.highest_severity] - severityRank[b.highest_severity]) || (b.anomaly_count - a.anomaly_count))[0];
+  const heroRecommendation = heroAsset
+    ? recommendations.find((r) => r.asset_id === heroAsset.equipment_id && r.severity === "HIGH")
+    : null;
+
   return (
     <div className="mx-auto max-w-[1400px] space-y-4 p-4 sm:p-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiTile label="Fleet Size" value={assets.length} />
-        <KpiTile label="Needs Attention" value={needsAttention} tone={needsAttention > 0 ? "high" : "default"} />
-        <KpiTile label="High Alerts" value={highAlerts} tone={highAlerts > 0 ? "high" : "default"} />
-        <KpiTile label="Avg. Utilization" value={`${avgUtilization}%`} />
-      </div>
+      <KpiCluster
+        items={[
+          { label: "Fleet Size", value: assets.length },
+          { label: "Needs Attention", value: needsAttention, tone: needsAttention > 0 ? "high" : "default" },
+          { label: "High Alerts", value: highAlerts, tone: highAlerts > 0 ? "high" : "default" },
+          { label: "Avg. Utilization", value: `${avgUtilization}%` },
+        ]}
+      />
+
+      <HeroAssetPanel asset={heroAsset} recommendation={heroRecommendation} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
         <FleetTable assets={assets} />

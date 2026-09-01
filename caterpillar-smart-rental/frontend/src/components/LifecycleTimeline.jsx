@@ -9,8 +9,8 @@ const EVENT_TONE = {
 
 export function LifecycleTimeline({ events }) {
   return (
-    <div className="border border-hairline bg-panel p-3">
-      <div className="mb-3 text-[11px] font-medium uppercase tracking-wide text-ink-faint">Lifecycle Timeline</div>
+    <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
+      <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Lifecycle Timeline</div>
       <ol className="space-y-0">
         {events.map((e, idx) => (
           <li key={e.id} className="relative flex gap-3 pb-4 last:pb-0">
