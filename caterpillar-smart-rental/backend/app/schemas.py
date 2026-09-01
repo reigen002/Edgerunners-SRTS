@@ -196,6 +196,17 @@ class ExpectedReturn(BaseModel):
     expected_return_date: Optional[datetime]
 
 
+class AllocationCandidate(BaseModel):
+    """An asset identified as a recoverable/reallocatable candidate for a demand gap."""
+    asset_id: str
+    equipment_type: str
+    current_status: str                       # "available" | "recoverable" | "returning"
+    current_site_id: Optional[str] = None
+    destination_site_id: str
+    reason: str                               # why this asset is a candidate
+    action: str                               # e.g. "Recover and redeploy to S003"
+
+
 class ForecastOut(BaseModel):
     equipment_type: str
     site_id: Optional[str] = None
@@ -204,3 +215,10 @@ class ForecastOut(BaseModel):
     expected_returning: list[ExpectedReturn]
     recommended_allocation: int   # suggested fleet size for next period
     allocation_rationale: str
+    # --- Site-level supply/gap fields (populated when site_id is set) ---
+    supply_available: Optional[int] = None    # assets of this type currently available
+    supply_recoverable: Optional[int] = None  # assets that can be reallocated to this site
+    supply_total_known: Optional[int] = None  # available + recoverable
+    peak_forecast_demand: Optional[int] = None  # peak monthly unit count from forecast
+    projected_gap: Optional[int] = None      # peak_demand - supply_total_known (>=0)
+    allocation_candidates: Optional[list[AllocationCandidate]] = None
