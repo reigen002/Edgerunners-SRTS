@@ -2,20 +2,21 @@
 Recommendations router.
 
 GET /recommendations — produce actionable, human-readable recommendations
-                       for every asset showing anomalies.
+                       for every asset showing anomalies, PLUS forecast-driven
+                       allocation recommendations derived from site-level demand.
 
-Each recommendation consolidates ALL conditions detected for an asset into
-ONE coherent dealer action — correlated symptoms (no_site + no_operator +
-high_idle) are not emitted as separate records.
+Two recommendation classes:
 
-Shape:
-  {
-    asset: str,
-    issue: str,
-    severity: "LOW"|"MEDIUM"|"HIGH"|"CRITICAL",
-    evidence: str,
-    recommendation: str   ← actionable, not just "anomaly detected"
-  }
+1. Asset anomaly recs (existing, unchanged):
+   One consolidated rec per asset with detected issues (no_site, no_operator,
+   high_idle, low_utilization, etc.).  EQX1002 hero story lives here.
+
+2. Forecast allocation recs (new):
+   One rec per site × equipment-type segment where projected_gap > 0 and
+   allocation_candidates exist.  EQX1007 → S003 story lives here.
+
+Both classes are returned in the same list, sorted CRITICAL → HIGH → MEDIUM → LOW.
+The shape is the same RecommendationOut — no new schema needed.
 """
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
 
 # ---------------------------------------------------------------------------
-# Rule-based recommendation engine
+# Rule-based recommendation engine (anomaly recs — unchanged)
 # ---------------------------------------------------------------------------
 
 PRODUCTIVE_RATIO_CRITICAL = 5.0     # %
@@ -45,7 +46,7 @@ def _highest(severities: list[str]) -> str:
     return min(severities, key=lambda s: _SEVERITY_ORDER.get(s, 99))
 
 
-def _build_recommendations(assets: list[Asset]) -> list[RecommendationOut]:
+def _build_anomaly_recommendations(assets: list[Asset]) -> list[RecommendationOut]:
     recs: list[RecommendationOut] = []
 
     for asset in assets:
@@ -55,7 +56,6 @@ def _build_recommendations(assets: list[Asset]) -> list[RecommendationOut]:
             asset.operating_days,
         )
 
-        # Collect all detected conditions for this asset
         issues: list[str] = []
         severities: list[str] = []
         evidence_parts: list[str] = []
@@ -122,9 +122,8 @@ def _build_recommendations(assets: list[Asset]) -> list[RecommendationOut]:
             )
 
         if not issues:
-            continue  # asset is healthy — no recommendation needed
+            continue
 
-        # ── Consolidate into one recommendation per asset ─────────────────
         overall_severity = _highest(severities)
         issue_summary = (
             issues[0].capitalize() if len(issues) == 1
@@ -150,17 +149,112 @@ def _build_recommendations(assets: list[Asset]) -> list[RecommendationOut]:
             recommendation=rec_text,
         ))
 
-    # Sort: CRITICAL → HIGH → MEDIUM → LOW
-    recs.sort(key=lambda r: _SEVERITY_ORDER.get(r.severity, 99))
     return recs
 
+
+# ---------------------------------------------------------------------------
+# Forecast-driven allocation recommendations (new)
+# ---------------------------------------------------------------------------
+
+def _build_allocation_recommendations(
+    all_assets: list[Asset],
+) -> list[RecommendationOut]:
+    """
+    For each site × equipment-type segment in the demand supplement that has
+    projected_gap > 0 and at least one allocation candidate, emit ONE
+    consolidated recommendation describing the allocation action and gap.
+    """
+    from app.routers.forecasts import _site_level_forecast
+    from app.demand_supplement import all_supplement_segments
+    from app.clock import get_demo_date
+
+    demo_date_str = get_demo_date().isoformat()
+    recs: list[RecommendationOut] = []
+
+    for seg in all_supplement_segments():
+        row = _site_level_forecast(
+            seg["site_id"],
+            seg["equipment_type"],
+            all_assets,
+            demo_date_str,
+        )
+        if row is None:
+            continue
+        if (row.projected_gap or 0) <= 0:
+            continue
+        if not row.allocation_candidates:
+            continue
+
+        # Pick best candidate (already ranked in _site_level_forecast)
+        best = row.allocation_candidates[0]
+        other_candidates = row.allocation_candidates[1:]
+
+        # One rec per forecast segment — references the primary candidate asset
+        gap = row.projected_gap or 0
+        supply_total = row.supply_total_known or 0
+        peak_demand = row.peak_forecast_demand or 0
+
+        candidate_ids = [c.asset_id for c in row.allocation_candidates]
+        candidate_list = ", ".join(candidate_ids)
+
+        evidence_parts = [
+            f"Forecast demand for {row.equipment_type} at site {row.site_id}: "
+            f"{peak_demand} unit(s)/month (weighted moving average over "
+            f"{len(row.history)} historical periods).",
+            f"Known supply: {row.supply_available} available + "
+            f"{row.supply_recoverable} recoverable = {supply_total} total.",
+            f"Projected gap after recovery: {gap} unit(s).",
+            f"Recovery candidate(s): {candidate_list}.",
+        ]
+        if best.current_status == "recoverable" or best.current_status == "checked_out":
+            evidence_parts.append(best.reason)
+
+        rec_parts = [
+            f"Recover and redeploy {best.asset_id} ({best.equipment_type}) "
+            f"to site {row.site_id}.",
+        ]
+        if gap > len(row.allocation_candidates):
+            remaining = gap - len(row.allocation_candidates)
+            rec_parts.append(
+                f"After recovery, {remaining} additional {row.equipment_type.lower()} "
+                f"unit(s) may still be required — consider procurement or cross-site transfer."
+            )
+        elif gap == 1 and supply_total >= 1:
+            rec_parts.append(
+                f"Forecast demand is {peak_demand} unit(s); known supply after recovery "
+                f"is {supply_total}. One additional unit may still be required — "
+                f"monitor demand before committing to additional procurement."
+            )
+
+        recs.append(RecommendationOut(
+            asset=best.asset_id,
+            issue=f"Forecast demand gap — {row.equipment_type} at {row.site_id}",
+            severity="HIGH",
+            evidence=" ".join(evidence_parts),
+            recommendation=" ".join(rec_parts),
+        ))
+
+    return recs
+
+
+# ---------------------------------------------------------------------------
+# Route
+# ---------------------------------------------------------------------------
 
 @router.get("", response_model=list[RecommendationOut])
 def get_recommendations(db: Session = Depends(get_db)):
     """
-    Return actionable recommendations for every asset with detected issues.
-    Correlated conditions per asset are consolidated into one recommendation.
-    Results are ordered by severity (CRITICAL → LOW).
+    Return actionable recommendations:
+      1. Asset anomaly recs (EQX1002 hero story) — one per asset.
+      2. Forecast allocation recs (EQX1007 → S003 story) — one per forecast gap.
+    Both are ordered by severity (CRITICAL → LOW).
     """
     assets = db.query(Asset).order_by(Asset.id).all()
-    return _build_recommendations(assets)
+
+    anomaly_recs = _build_anomaly_recommendations(assets)
+    allocation_recs = _build_allocation_recommendations(assets)
+
+    all_recs = anomaly_recs + allocation_recs
+    all_recs.sort(key=lambda r: _SEVERITY_ORDER.get(r.severity, 99))
+    return all_recs
+
