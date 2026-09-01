@@ -1,0 +1,171 @@
+{
+  "version": "1.0",
+  "demo_now": "2025-05-12T09:00:00",
+  "method": "3-month weighted moving average (weights 1-2-3), rounded to nearest whole asset; planning estimate only.",
+  "forecasts": [
+    {
+      "site_id": "S003",
+      "equipment_type": "Excavator",
+      "historical_demand": [
+        {
+          "period": "2025-01",
+          "count": 2
+        },
+        {
+          "period": "2025-02",
+          "count": 2
+        },
+        {
+          "period": "2025-03",
+          "count": 3
+        },
+        {
+          "period": "2025-04",
+          "count": 3
+        }
+      ],
+      "predicted_demand": [
+        {
+          "period": "2025-05",
+          "count": 3
+        },
+        {
+          "period": "2025-06",
+          "count": 3
+        }
+      ],
+      "expected_availability": [
+        {
+          "equipment_id": "EQX1007",
+          "available_from": "2025-05-12",
+          "reason": "Overdue/recoverable excavator; supplementary runtime state."
+        }
+      ],
+      "explanation": "Recent demand is 2, 2, 3, 3 and the weighted trend supports approximately 3 excavators/month.",
+      "recommended_allocation": "Review recovery of EQX1007 for S003 before acquiring additional capacity."
+    },
+    {
+      "site_id": "S002",
+      "equipment_type": "Bulldozer",
+      "historical_demand": [
+        {
+          "period": "2025-01",
+          "count": 1
+        },
+        {
+          "period": "2025-02",
+          "count": 1
+        },
+        {
+          "period": "2025-03",
+          "count": 1
+        },
+        {
+          "period": "2025-04",
+          "count": 1
+        }
+      ],
+      "predicted_demand": [
+        {
+          "period": "2025-05",
+          "count": 1
+        },
+        {
+          "period": "2025-06",
+          "count": 1
+        }
+      ],
+      "expected_availability": [
+        {
+          "equipment_id": "EQX1003",
+          "available_from": "2025-03-11",
+          "reason": "Official record has check-in 2025-03-11; asset is returned in runtime state."
+        }
+      ],
+      "explanation": "Demand is flat at one bulldozer per month across the observed period.",
+      "recommended_allocation": "Keep one bulldozer capacity available for S002; avoid unnecessary additional allocation."
+    },
+    {
+      "site_id": "S001",
+      "equipment_type": "Grader",
+      "historical_demand": [
+        {
+          "period": "2025-01",
+          "count": 1
+        },
+        {
+          "period": "2025-02",
+          "count": 1
+        },
+        {
+          "period": "2025-03",
+          "count": 1
+        },
+        {
+          "period": "2025-04",
+          "count": 2
+        }
+      ],
+      "predicted_demand": [
+        {
+          "period": "2025-05",
+          "count": 2
+        },
+        {
+          "period": "2025-06",
+          "count": 2
+        }
+      ],
+      "expected_availability": [
+        {
+          "equipment_id": "EQX1004",
+          "available_from": "2025-05-15",
+          "reason": "Expected check-in is 2025-05-15; supplementary runtime state."
+        }
+      ],
+      "explanation": "Demand increased from one to two graders in April; the weighted estimate remains around two.",
+      "recommended_allocation": "Review EQX1004 for S001 after its expected return on 2025-05-15 if S001 still requires grader capacity."
+    },
+    {
+      "site_id": "S004",
+      "equipment_type": "Grader",
+      "historical_demand": [
+        {
+          "period": "2025-01",
+          "count": 1
+        },
+        {
+          "period": "2025-02",
+          "count": 2
+        },
+        {
+          "period": "2025-03",
+          "count": 2
+        },
+        {
+          "period": "2025-04",
+          "count": 3
+        }
+      ],
+      "predicted_demand": [
+        {
+          "period": "2025-05",
+          "count": 3
+        },
+        {
+          "period": "2025-06",
+          "count": 3
+        }
+      ],
+      "expected_availability": [
+        {
+          "equipment_id": "EQX1004",
+          "available_from": "2025-05-15",
+          "reason": "Expected check-in is 2025-05-15; asset is currently assigned to S004."
+        }
+      ],
+      "explanation": "Demand has risen from one to three graders over four months; the simple weighted forecast stays near three.",
+      "recommended_allocation": "Retain EQX1004 for S004 unless its return is confirmed and another grader is secured."
+    }
+  ]
+}

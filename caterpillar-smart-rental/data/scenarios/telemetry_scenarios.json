@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "demo_now": "2025-05-12T09:00:00",
+  "deterministic": true,
+  "notes": "Implementation-plan schema: backend generates timestamped frames by interpolation/ramp; no randomness.",
+  "EQX1004": {
+    "scenario_labels": [
+      "overheating",
+      "location_mismatch",
+      "seatbelt_safety_violation",
+      "abnormal_fuel"
+    ],
+    "waypoints": [
+      [
+        34.142,
+        -117.354
+      ],
+      [
+        34.1432,
+        -117.3515
+      ],
+      [
+        34.146,
+        -117.344
+      ],
+      [
+        34.15,
+        -117.337
+      ]
+    ],
+    "frame_count": 24,
+    "interval_minutes": 15,
+    "base_temp_c": 82,
+    "temp_ramp_at_frame": 16,
+    "temp_ramp_c_per_frame": 1.7,
+    "seatbelt_off_frames": [
+      18,
+      19,
+      20
+    ],
+    "base_fuel_pct": 74,
+    "fuel_rate_lph": 26.0,
+    "fault_at_frame": {
+      "frame": 18,
+      "code": "E-OVERHEAT"
+    },
+    "expected_events": {
+      "overheating": {
+        "condition": "engine_temp_c >= 105",
+        "first_trigger_frame": 18,
+        "alert": "Engine temperature exceeds configured demo threshold.",
+        "recommended_action": "Stop operation when safe to do so and inspect the cooling system before continued operation."
+      },
+      "location_mismatch": {
+        "condition": "asset remains outside assigned-site radius for >= 20 minutes",
+        "first_trigger_frame": 20,
+        "alert": "Asset is operating outside its assigned site.",
+        "recommended_action": "Verify asset movement with the dealer/customer and update allocation records if relocation is legitimate."
+      },
+      "seatbelt_safety_violation": {
+        "condition": "engine_on == true AND seatbelt == OFF",
+        "first_trigger_frame": 18,
+        "alert": "Operator seatbelt violation detected during machine operation.",
+        "recommended_action": "Stop safely, correct seatbelt use, coach the operator and acknowledge the safety event."
+      },
+      "abnormal_fuel": {
+        "condition": "fuel_rate_lph > 25",
+        "first_trigger_frame": 0,
+        "alert": "Fuel consumption is above the configured demo threshold.",
+        "recommended_action": "Review load/operating conditions and inspect if the abnormal pattern persists."
+      }
+    }
+  },
+  "EQX1002": {
+    "scenario_labels": [
+      "abnormal_idle"
+    ],
+    "waypoints": [
+      [
+        34.06,
+        -117.43
+      ]
+    ],
+    "frame_count": 12,
+    "interval_minutes": 30,
+    "base_temp_c": 78,
+    "temp_ramp_at_frame": 99,
+    "temp_ramp_c_per_frame": 0,
+    "seatbelt_off_frames": [],
+    "base_fuel_pct": 61,
+    "fuel_rate_lph": 0,
+    "fault_at_frame": null,
+    "expected_events": {
+      "abnormal_idle": {
+        "condition": "idle_minutes >= 300 in a day-equivalent demo window",
+        "first_trigger_frame": 10,
+        "alert": "Excessive idle time detected.",
+        "recommended_action": "Verify operating status and review whether the asset should remain deployed."
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+# Runtime SQLite database — regenerated on startup by seed_database().
+# Committing this baked in stale seed state (e.g. status values) that
+# source changes couldn't override, since seeding only inserts missing
+# rows and never updates existing ones.
+backend/*.db
+backend/*.db-journal
