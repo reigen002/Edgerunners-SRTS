@@ -42,7 +42,7 @@ ASSETS = [
         "checkout_date": datetime(2025, 3, 1,  tzinfo=timezone.utc),
         "expected_return_date": datetime(2025, 3, 30, tzinfo=timezone.utc),
         "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 11.0, "operating_days": 20,
-        "status": "available", "customer_name": None,
+        "status": "checked_out", "customer_name": None,
         "qr_code": "QR-EQX1002", "rfid_tag": "RFID-EQX1002",
     },
     {
@@ -60,7 +60,7 @@ ASSETS = [
         "checkout_date": datetime(2025, 5, 5,  tzinfo=timezone.utc),
         "expected_return_date": datetime(2025, 5, 15, tzinfo=timezone.utc),
         "engine_hrs_per_day": 2.0, "idle_hrs_per_day": 9.0,  "operating_days": 10,
-        "status": "available", "customer_name": "Metro Roads Inc",
+        "status": "checked_out", "customer_name": "Metro Roads Inc",
         "qr_code": "QR-EQX1004", "rfid_tag": "RFID-EQX1004",
     },
     {
@@ -87,7 +87,7 @@ ASSETS = [
         "checkout_date": datetime(2025, 3, 20, tzinfo=timezone.utc),
         "expected_return_date": datetime(2025, 4, 1,  tzinfo=timezone.utc),
         "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 12.0, "operating_days": 12,
-        "status": "available", "customer_name": None,
+        "status": "checked_out", "customer_name": None,
         "qr_code": "QR-EQX1007", "rfid_tag": "RFID-EQX1007",
     },
 ]

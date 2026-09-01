@@ -39,6 +39,44 @@ class TestEQX1007Alerts:
         assert len(resp.json()) >= 1
 
 
+class TestOverdueAlerts:
+    """
+    Regression test for a seed bug: every asset was seeded with
+    status="available" regardless of checkout_date, so the overdue rule
+    (which requires status=="checked_out") never fired on a fresh seed —
+    EQX1002's headline 43-days-overdue scenario silently never triggered.
+    """
+
+    def test_eqx1002_seeded_as_checked_out(self, db_session):
+        from app.models import Asset
+        asset = db_session.get(Asset, "EQX1002")
+        assert asset.status == "checked_out"
+
+    def test_eqx1002_overdue_alert_on_fresh_seed(self, client):
+        resp = client.get("/alerts?asset_id=EQX1002&alert_type=overdue")
+        assert resp.status_code == 200
+        assert len(resp.json()) >= 1
+
+    def test_eqx1007_overdue_alert_on_fresh_seed(self, client):
+        resp = client.get("/alerts?asset_id=EQX1007&alert_type=overdue")
+        assert resp.status_code == 200
+        assert len(resp.json()) >= 1
+
+    def test_eqx1004_checked_out_but_not_yet_overdue(self, client, db_session):
+        """EQX1004's expected_return_date (2025-05-15) is after DEMO_NOW (2025-05-12)."""
+        from app.models import Asset
+        asset = db_session.get(Asset, "EQX1004")
+        assert asset.status == "checked_out"
+        resp = client.get("/alerts?asset_id=EQX1004&alert_type=overdue")
+        assert resp.json() == []
+
+    def test_returned_assets_not_checked_out(self, db_session):
+        from app.models import Asset
+        for asset_id in ("EQX1001", "EQX1003", "EQX1005", "EQX1006"):
+            asset = db_session.get(Asset, asset_id)
+            assert asset.status == "available", f"{asset_id} should be available (already returned)"
+
+
 class TestAlertRefresh:
     def test_refresh_post_endpoint(self, client):
         resp = client.post("/alerts/refresh")
