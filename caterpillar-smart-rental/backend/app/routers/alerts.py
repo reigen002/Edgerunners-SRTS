@@ -46,7 +46,9 @@ def _generate_alerts_for_asset(db: Session, asset: Asset) -> list[Alert]:
 
     # --- Dataset-visible anomalies (spec-mandated) ---
 
-    if asset.site_id is None:
+    # Only anomalous while actively rented — a returned/available asset has no
+    # active site/operator by definition and that isn't a problem to flag.
+    if asset.site_id is None and asset.status == "checked_out":
         new_alerts.append(
             make_alert(
                 "no_site", "HIGH",
@@ -55,7 +57,7 @@ def _generate_alerts_for_asset(db: Session, asset: Asset) -> list[Alert]:
             )
         )
 
-    if asset.operator_id is None:
+    if asset.operator_id is None and asset.status == "checked_out":
         new_alerts.append(
             make_alert(
                 "no_operator", "HIGH",

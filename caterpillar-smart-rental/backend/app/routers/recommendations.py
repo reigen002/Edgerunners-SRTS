@@ -22,11 +22,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Asset
+from app.models import Alert, Asset
 from app.schemas import RecommendationOut
 from app.utilization import calculate_utilization
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
+
+# Telemetry-derived alert types -> (recommended action, human label)
+_TELEMETRY_ACTIONS = {
+    "engine_overheat": ("inspect the cooling system before continued operation", "engine overheating"),
+    "seatbelt_violation": ("notify the operator and deliver seatbelt safety coaching before continued operation", "seatbelt not fastened"),
+    "location_mismatch": ("verify the asset's current location and assignment", "location mismatch"),
+    "abnormal_fuel": ("check for a fuel leak or inefficiency and inspect the asset", "abnormal fuel consumption"),
+}
 
 
 # ---------------------------------------------------------------------------
@@ -61,8 +69,9 @@ def _build_anomaly_recommendations(assets: list[Asset]) -> list[RecommendationOu
         evidence_parts: list[str] = []
         rec_parts: list[str] = []
 
-        # ── Condition: No site assigned ───────────────────────────────────
-        if asset.site_id is None:
+        # ── Condition: No site assigned (only anomalous while actively rented —
+        # a returned/available asset has no active site by definition) ────
+        if asset.site_id is None and asset.status == "checked_out":
             issues.append("no site assigned")
             severities.append("HIGH")
             evidence_parts.append(
@@ -74,7 +83,7 @@ def _build_anomaly_recommendations(assets: list[Asset]) -> list[RecommendationOu
             )
 
         # ── Condition: No operator assigned ──────────────────────────────
-        if asset.operator_id is None:
+        if asset.operator_id is None and asset.status == "checked_out":
             issues.append("no operator assigned")
             severities.append("HIGH")
             evidence_parts.append(
@@ -143,6 +152,49 @@ def _build_anomaly_recommendations(assets: list[Asset]) -> list[RecommendationOu
 
         recs.append(RecommendationOut(
             asset=asset.id,
+            issue=issue_summary,
+            severity=overall_severity,
+            evidence=evidence_text,
+            recommendation=rec_text,
+        ))
+
+    return recs
+
+
+# ---------------------------------------------------------------------------
+# Telemetry-driven maintenance/safety recommendations
+# ---------------------------------------------------------------------------
+
+def _build_telemetry_recommendations(db: Session) -> list[RecommendationOut]:
+    """
+    One consolidated maintenance/safety rec per asset carrying unresolved
+    telemetry-based alerts (engine_overheat, seatbelt_violation,
+    location_mismatch, abnormal_fuel) — spec §5 "Predictive maintenance".
+    """
+    alerts = (
+        db.query(Alert)
+        .filter(Alert.alert_type.in_(_TELEMETRY_ACTIONS.keys()), Alert.resolved.is_(False))
+        .order_by(Alert.asset_id, Alert.created_at)
+        .all()
+    )
+
+    by_asset: dict[str, list[Alert]] = {}
+    for a in alerts:
+        by_asset.setdefault(a.asset_id, []).append(a)
+
+    recs: list[RecommendationOut] = []
+    for asset_id, asset_alerts in by_asset.items():
+        severities = [a.severity for a in asset_alerts]
+        overall_severity = _highest(severities)
+        labels = [_TELEMETRY_ACTIONS[a.alert_type][1] for a in asset_alerts]
+        actions = dict.fromkeys(_TELEMETRY_ACTIONS[a.alert_type][0] for a in asset_alerts)
+
+        issue_summary = "; ".join(l.capitalize() for l in dict.fromkeys(labels))
+        evidence_text = " ".join(f"{a.message} {a.evidence}".strip() for a in asset_alerts)
+        rec_text = " ".join(f"{action.capitalize()}." for action in actions)
+
+        recs.append(RecommendationOut(
+            asset=asset_id,
             issue=issue_summary,
             severity=overall_severity,
             evidence=evidence_text,
@@ -246,15 +298,18 @@ def get_recommendations(db: Session = Depends(get_db)):
     """
     Return actionable recommendations:
       1. Asset anomaly recs (EQX1002 hero story) — one per asset.
-      2. Forecast allocation recs (EQX1007 → S003 story) — one per forecast gap.
+      2. Telemetry maintenance/safety recs — one per asset with an active
+         engine_overheat/seatbelt_violation/location_mismatch/abnormal_fuel alert.
+      3. Forecast allocation recs (EQX1007 → S003 story) — one per forecast gap.
     Both are ordered by severity (CRITICAL → LOW).
     """
     assets = db.query(Asset).order_by(Asset.id).all()
 
     anomaly_recs = _build_anomaly_recommendations(assets)
+    telemetry_recs = _build_telemetry_recommendations(db)
     allocation_recs = _build_allocation_recommendations(assets)
 
-    all_recs = anomaly_recs + allocation_recs
+    all_recs = anomaly_recs + telemetry_recs + allocation_recs
     all_recs.sort(key=lambda r: _SEVERITY_ORDER.get(r.severity, 99))
     return all_recs
 
