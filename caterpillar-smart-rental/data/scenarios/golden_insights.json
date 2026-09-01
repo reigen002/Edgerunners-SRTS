@@ -1,0 +1,107 @@
+{
+  "version": "1.0",
+  "demo_now": "2025-05-12T09:00:00",
+  "official_asset_count": 7,
+  "utilization_pct": {
+    "EQX1001": 13,
+    "EQX1002": 0,
+    "EQX1003": 94,
+    "EQX1004": 18,
+    "EQX1005": 100,
+    "EQX1006": 33,
+    "EQX1007": 0
+  },
+  "productive_hours_total": {
+    "EQX1001": 22.5,
+    "EQX1002": 0,
+    "EQX1003": 187.5,
+    "EQX1004": 20,
+    "EQX1005": 240,
+    "EQX1006": 54,
+    "EQX1007": 0
+  },
+  "idle_hours_total": {
+    "EQX1001": 150,
+    "EQX1002": 220,
+    "EQX1003": 12.5,
+    "EQX1004": 90,
+    "EQX1005": 0,
+    "EQX1006": 108,
+    "EQX1007": 144
+  },
+  "expected_anomaly_states": {
+    "EQX1001": [
+      "low_utilization"
+    ],
+    "EQX1002": [
+      "missing_site",
+      "missing_operator",
+      "zero_productive",
+      "low_utilization",
+      "excessive_idle",
+      "overdue_return"
+    ],
+    "EQX1003": [
+      "high_utilization"
+    ],
+    "EQX1004": [
+      "low_utilization",
+      "return_approaching"
+    ],
+    "EQX1005": [
+      "high_utilization"
+    ],
+    "EQX1006": [
+      "low_utilization"
+    ],
+    "EQX1007": [
+      "missing_site",
+      "missing_operator",
+      "zero_productive",
+      "low_utilization",
+      "excessive_idle",
+      "overdue_return"
+    ]
+  },
+  "hero_asset": {
+    "asset": "EQX1002",
+    "expected_status": "OVERDUE",
+    "expected_highest_severity": "HIGH",
+    "expected_anomaly_count": 6,
+    "expected_top_anomaly": "overdue_return",
+    "expected_overdue_days": 43,
+    "expected_insight": "EQX1002 is overdue, unassigned to a site/operator, and records 0% productive utilization.",
+    "recommended_action": "Recover the asset and update rental records; verify location and operator assignment."
+  },
+  "forecast_golden": {
+    "S003|Excavator": {
+      "2025-05": 3,
+      "2025-06": 3
+    },
+    "S002|Bulldozer": {
+      "2025-05": 1,
+      "2025-06": 1
+    },
+    "S001|Grader": {
+      "2025-05": 2,
+      "2025-06": 2
+    },
+    "S004|Grader": {
+      "2025-05": 3,
+      "2025-06": 3
+    }
+  },
+  "telemetry_golden": {
+    "EQX1004": {
+      "overheat_fault_frame": 18,
+      "seatbelt_off_frames": [
+        18,
+        19,
+        20
+      ],
+      "location_mismatch_trigger_frame": 20,
+      "fault_code": "E-OVERHEAT",
+      "temperature_at_frame_18_c": 105.4
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "version": "1.0",
+  "demo_now": "2025-05-12T09:00:00",
+  "anomalies": [
+    {
+      "anomaly_type": "low_utilization",
+      "asset": "EQX1001",
+      "condition": "utilization_pct < 30",
+      "evidence": "1.5 engine hours/day and 10 idle hours/day over 15 operating days; derived utilization = 13%.",
+      "severity": "MEDIUM",
+      "recommended_action": "Review customer requirement and consider early return or reallocation."
+    },
+    {
+      "anomaly_type": "missing_site",
+      "asset": "EQX1002",
+      "condition": "site_id is null",
+      "evidence": "Official asset row has Site = NULL.",
+      "severity": "HIGH",
+      "recommended_action": "Review asset assignment and update the rental/site record."
+    },
+    {
+      "anomaly_type": "missing_operator",
+      "asset": "EQX1002",
+      "condition": "last_operator_id is null",
+      "evidence": "Official asset row has Last Operator = NULL.",
+      "severity": "HIGH",
+      "recommended_action": "Verify operator assignment and record the responsible operator."
+    },
+    {
+      "anomaly_type": "zero_productive",
+      "asset": "EQX1002",
+      "condition": "engine_hours_per_day == 0",
+      "evidence": "Official asset row records 0 engine hours/day across 20 operating days.",
+      "severity": "HIGH",
+      "recommended_action": "Verify whether the asset is still required; consider recovery or reallocation."
+    },
+    {
+      "anomaly_type": "low_utilization",
+      "asset": "EQX1002",
+      "condition": "utilization_pct < 30",
+      "evidence": "0 engine hours/day and 11 idle hours/day over 20 operating days; derived utilization = 0%.",
+      "severity": "HIGH",
+      "recommended_action": "Review customer requirement; consider early return or reallocation."
+    },
+    {
+      "anomaly_type": "excessive_idle",
+      "asset": "EQX1002",
+      "condition": "idle_hours_per_day > 10",
+      "evidence": "Official asset row records 11 idle hours/day over 20 operating days.",
+      "severity": "HIGH",
+      "recommended_action": "Review operating pattern and confirm whether the asset should remain deployed."
+    },
+    {
+      "anomaly_type": "overdue_return",
+      "asset": "EQX1002",
+      "condition": "current_state is RENTED and expected_checkin < DEMO_NOW date",
+      "evidence": "Supplementary runtime state marks EQX1002 RENTED with expected check-in 2025-03-30; DEMO_NOW is 2025-05-12.",
+      "severity": "HIGH",
+      "recommended_action": "Recover the asset and update rental records."
+    },
+    {
+      "anomaly_type": "high_utilization",
+      "asset": "EQX1003",
+      "condition": "utilization_pct >= 90",
+      "evidence": "7.5 engine hours/day and 0.5 idle hours/day over 25 operating days; derived utilization = 94%.",
+      "severity": "MEDIUM",
+      "recommended_action": "Monitor maintenance requirements and future availability; avoid missing scheduled service."
+    },
+    {
+      "anomaly_type": "low_utilization",
+      "asset": "EQX1004",
+      "condition": "utilization_pct < 30",
+      "evidence": "2 engine hours/day and 9 idle hours/day over 10 operating days; derived utilization = 18%.",
+      "severity": "MEDIUM",
+      "recommended_action": "Review site demand and customer usage before extending the rental."
+    },
+    {
+      "anomaly_type": "return_approaching",
+      "asset": "EQX1004",
+      "condition": "current_state is RENTED and expected_checkin is within 5 days of DEMO_NOW",
+      "evidence": "Supplementary runtime state marks EQX1004 RENTED with expected check-in 2025-05-15; DEMO_NOW is 2025-05-12 (3 days away).",
+      "severity": "LOW",
+      "recommended_action": "Prepare the asset for return and review upcoming demand for the next allocation."
+    },
+    {
+      "anomaly_type": "high_utilization",
+      "asset": "EQX1005",
+      "condition": "utilization_pct >= 90",
+      "evidence": "8 engine hours/day and 0 idle hours/day over 30 operating days; derived utilization = 100%.",
+      "severity": "HIGH",
+      "recommended_action": "Review maintenance/service schedule and monitor capacity before committing the asset to further work."
+    },
+    {
+      "anomaly_type": "low_utilization",
+      "asset": "EQX1006",
+      "condition": "utilization_pct < 40",
+      "evidence": "3 engine hours/day and 6 idle hours/day over 18 operating days; derived utilization = 33%.",
+      "severity": "LOW",
+      "recommended_action": "Monitor usage and compare against site demand before considering reallocation."
+    },
+    {
+      "anomaly_type": "missing_site",
+      "asset": "EQX1007",
+      "condition": "site_id is null",
+      "evidence": "Official asset row has Site = NULL.",
+      "severity": "HIGH",
+      "recommended_action": "Review asset assignment and verify its current physical/deployment location."
+    },
+    {
+      "anomaly_type": "missing_operator",
+      "asset": "EQX1007",
+      "condition": "last_operator_id is null",
+      "evidence": "Official asset row has Last Operator = NULL.",
+      "severity": "HIGH",
+      "recommended_action": "Verify operator assignment and record the responsible operator."
+    },
+    {
+      "anomaly_type": "zero_productive",
+      "asset": "EQX1007",
+      "condition": "engine_hours_per_day == 0",
+      "evidence": "Official asset row records 0 engine hours/day across 12 operating days.",
+      "severity": "HIGH",
+      "recommended_action": "Verify whether the asset is still required; consider recovery or reallocation."
+    },
+    {
+      "anomaly_type": "low_utilization",
+      "asset": "EQX1007",
+      "condition": "utilization_pct < 30",
+      "evidence": "0 engine hours/day and 12 idle hours/day over 12 operating days; derived utilization = 0%.",
+      "severity": "HIGH",
+      "recommended_action": "Review customer/site requirement and consider recovery or reallocation."
+    },
+    {
+      "anomaly_type": "excessive_idle",
+      "asset": "EQX1007",
+      "condition": "idle_hours_per_day > 10",
+      "evidence": "Official asset row records 12 idle hours/day over 12 operating days.",
+      "severity": "HIGH",
+      "recommended_action": "Verify the asset's operating status and consider recovery/reallocation."
+    },
+    {
+      "anomaly_type": "overdue_return",
+      "asset": "EQX1007",
+      "condition": "current_state is RENTED and expected_checkin < DEMO_NOW date",
+      "evidence": "Supplementary runtime state marks EQX1007 RENTED with expected check-in 2025-04-01; DEMO_NOW is 2025-05-12.",
+      "severity": "HIGH",
+      "recommended_action": "Recover the asset, verify its location, and update rental records."
+    }
+  ]
+}
