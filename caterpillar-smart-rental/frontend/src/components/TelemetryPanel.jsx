@@ -3,6 +3,47 @@ import { IconGauge } from "./icons";
 
 const FRAME_MS = 350;
 
+const SCENARIOS = [
+  { value: "normal", label: "Normal" },
+  { value: "engine_overheat", label: "Engine Overheat" },
+  { value: "location_mismatch", label: "Location Mismatch" },
+  { value: "seatbelt_violation", label: "Seatbelt Violation" },
+  { value: "high_idle", label: "High Idle" },
+  { value: "abnormal_fuel", label: "Abnormal Fuel" },
+];
+
+function ScenarioRunner({ onRun }) {
+  const [scenario, setScenario] = useState("engine_overheat");
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState(null);
+
+  async function run() {
+    setRunning(true);
+    setResult(null);
+    try {
+      await onRun(scenario);
+      setResult({ ok: true, text: "Scenario run — alerts refreshed." });
+    } catch (e) {
+      setResult({ ok: false, text: e.message || "Simulation failed." });
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-hairline pb-3">
+      <select value={scenario} onChange={(e) => setScenario(e.target.value)} className="border border-hairline-strong bg-panel-raised px-2 py-1.5 text-[13px] text-ink">
+        {SCENARIOS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+      </select>
+      <button onClick={run} disabled={running} className="border border-hairline-strong px-2.5 py-1.5 text-[13px] text-ink hover:bg-panel-raised disabled:opacity-60">
+        {running ? "Running…" : "Run Scenario"}
+      </button>
+      <span className="text-[11px] text-ink-faint">Posts /simulate, then /alerts/refresh, then reloads this asset.</span>
+      {result && <span className={`text-[12px] ${result.ok ? "text-signal-healthy" : "text-signal-high"}`}>{result.text}</span>}
+    </div>
+  );
+}
+
 function Gauge({ label, value, unit, warn }) {
   return (
     <div className={`border px-3 py-2 ${warn ? "border-signal-high/40 bg-signal-high/[0.06]" : "border-hairline bg-panel-raised"}`}>
@@ -14,10 +55,14 @@ function Gauge({ label, value, unit, warn }) {
   );
 }
 
-export function TelemetryPanel({ frames, onFrame }) {
+export function TelemetryPanel({ frames, onFrame, onRunScenario }) {
   const [i, setI] = useState(frames.length ? frames.length - 1 : 0);
   const [playing, setPlaying] = useState(false);
   const timer = useRef(null);
+
+  useEffect(() => {
+    setI(frames.length ? frames.length - 1 : 0);
+  }, [frames]);
 
   useEffect(() => {
     if (!playing) return;
@@ -38,14 +83,19 @@ export function TelemetryPanel({ frames, onFrame }) {
 
   if (!frames.length) {
     return (
-      <div className="border border-hairline bg-panel p-4 text-sm text-ink-faint">
-        No active telemetry scenario for this asset.
+      <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
+        <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <IconGauge /> Live Telemetry Playback
+        </div>
+        {onRunScenario && <ScenarioRunner onRun={onRunScenario} />}
+        <p className="text-sm text-ink-faint">No telemetry recorded for this asset yet. Run a scenario above to generate readings.</p>
       </div>
     );
   }
 
   return (
     <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
+      {onRunScenario && <ScenarioRunner onRun={onRunScenario} />}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           <IconGauge /> Live Telemetry Playback

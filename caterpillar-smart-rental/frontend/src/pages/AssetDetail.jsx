@@ -29,31 +29,39 @@ export function AssetDetail() {
   const [telemetry, setTelemetry] = useState([]);
   const [currentFrame, setCurrentFrame] = useState(null);
   const [modal, setModal] = useState(null);
+  const [error, setError] = useState(null);
 
   const load = useCallback(() => {
-    api.getAsset(id).then(setAsset);
+    api.getAsset(id).then(setAsset).catch((e) => setError(e.status === 404 ? `Asset ${id} not found.` : e.message || "Failed to load asset."));
     api.getTelemetry(id).then((r) => setTelemetry(r.frames));
   }, [id]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { setAsset(null); setError(null); load(); }, [load]);
 
   const onFrame = useCallback((f) => setCurrentFrame(f), []);
 
+  if (error) return <div className="p-6 text-sm text-signal-high">{error} <Link to="/" className="underline">Back to dashboard</Link></div>;
   if (!asset) return <div className="p-6 text-sm text-ink-faint">Loading asset…</div>;
 
-  const seatbeltAnomaly = asset.anomalies.find((a) => a.code === "unsafe_seatbelt");
+  const seatbeltAnomaly = asset.anomalies.find((a) => a.code === "unsafe_seatbelt" || a.code === "seatbelt_violation");
   const overheatAnomaly = asset.anomalies.find((a) => a.code === "engine_overheat");
   const lowUtilAnomaly = asset.anomalies.find((a) => a.code === "low_utilization");
-  const overdueAnomaly = asset.anomalies.find((a) => a.code === "overdue_return");
 
   async function handleCheckout(body) {
     await api.checkout(id, body);
+    await api.refreshAlerts();
     setModal(null);
     load();
   }
   async function handleCheckin(body) {
     await api.checkin(id, body);
+    await api.refreshAlerts();
     setModal(null);
+    load();
+  }
+  async function handleRunScenario(scenario) {
+    await api.simulate(id, scenario);
+    await api.refreshAlerts();
     load();
   }
 
@@ -70,10 +78,10 @@ export function AssetDetail() {
       {/* Identity + status + priority + rental state + usage + assignment — one instrument cluster, above the fold. */}
       <div
         className={`relative overflow-hidden border bg-panel shadow-[var(--shadow-hero)] ${
-          asset.highest_severity === "HIGH" ? "border-signal-high/35" : "border-hairline"
+          asset.highest_severity === "HIGH" || asset.highest_severity === "CRITICAL" ? "border-signal-high/35" : "border-hairline"
         }`}
       >
-        {asset.highest_severity && <span className={`absolute inset-y-0 left-0 w-1.5 ${asset.highest_severity === "HIGH" ? "bg-signal-high" : "bg-signal-medium"}`} />}
+        {asset.highest_severity && <span className={`absolute inset-y-0 left-0 w-1.5 ${asset.highest_severity === "MEDIUM" ? "bg-signal-medium" : "bg-signal-high"}`} />}
         <div className="flex flex-wrap items-start justify-between gap-4 p-4 pl-6 sm:p-5 sm:pl-7">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -83,11 +91,11 @@ export function AssetDetail() {
             </div>
             <p className="mt-1.5 text-sm text-ink-dim">
               {asset.type} · {asset.anomaly_count} open anomal{asset.anomaly_count === 1 ? "y" : "ies"}
-              {overdueAnomaly && <span className="text-signal-high"> · {overdueAnomaly.values.days_overdue} days overdue</span>}
+              {asset.days_overdue != null && <span className="text-signal-high"> · {asset.days_overdue} days overdue</span>}
             </p>
           </div>
           <div className="flex gap-2">
-            {asset.status === "RETURNED" || asset.status === "UNASSIGNED" ? (
+            {asset.raw_status !== "checked_out" ? (
               <button onClick={() => setModal("checkout")} className="border border-hairline-strong px-3 py-1.5 text-sm text-ink hover:bg-panel-raised">
                 Check Out
               </button>
@@ -107,7 +115,7 @@ export function AssetDetail() {
           <div className="px-4 py-3"><Stat label="Site" value={asset.assignment.site_id ? asset.site_name : "Unassigned"} tone={asset.assignment.site_id ? "text-ink" : "text-signal-high"} /></div>
           <div className="px-4 py-3"><Stat label="Operator" value={asset.assignment.operator_id ? asset.operator_name : "Unassigned"} tone={asset.assignment.operator_id ? "text-ink" : "text-signal-high"} /></div>
           <div className="px-4 py-3"><Stat label="Checkout" value={formatDate(asset.checkout_date)} /></div>
-          <div className="px-4 py-3"><Stat label="Expected Check-In" value={formatDate(asset.assignment.expected_checkin)} tone={overdueAnomaly ? "text-signal-high" : "text-ink"} /></div>
+          <div className="px-4 py-3"><Stat label="Expected Check-In" value={formatDate(asset.assignment.expected_checkin)} tone={asset.days_overdue != null ? "text-signal-high" : "text-ink"} /></div>
         </div>
       </div>
 
@@ -117,7 +125,7 @@ export function AssetDetail() {
         <FleetMap sites={[]} assets={[mapAsset]} trace={trace} />
       </div>
 
-      <TelemetryPanel frames={telemetry} onFrame={onFrame} />
+      <TelemetryPanel frames={telemetry} onFrame={onFrame} onRunScenario={handleRunScenario} />
 
       <div>
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Anomalies</div>
@@ -143,12 +151,12 @@ export function AssetDetail() {
         <LifecycleTimeline events={asset.events} />
       </div>
 
-      {asset.recommendations.some((r) => r.type === "allocation" && r.target_site_id) && (
+      {asset.recommendations.length > 0 && (
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-1 text-[13px] text-signal-high hover:underline"
         >
-          View demand forecast on the dashboard <IconArrowRight />
+          View demand forecast and allocation options on the dashboard <IconArrowRight />
         </button>
       )}
 

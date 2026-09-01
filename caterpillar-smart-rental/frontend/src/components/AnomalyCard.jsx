@@ -12,7 +12,7 @@ function Row({ label, children, tone = "text-ink-dim" }) {
 }
 
 export function AnomalyCard({ anomaly }) {
-  const isHigh = anomaly.severity === "HIGH";
+  const isHigh = anomaly.severity === "HIGH" || anomaly.severity === "CRITICAL";
   const consequence = ANOMALY_CONSEQUENCE[anomaly.code];
 
   return (
@@ -29,11 +29,13 @@ export function AnomalyCard({ anomaly }) {
       <div className="mt-1.5 divide-y divide-hairline/60">
         <Row label="Evidence">{anomaly.evidence}</Row>
         {consequence && <Row label="Why it matters">{consequence}</Row>}
-        <Row label="Action" tone={isHigh ? "font-medium text-signal-high" : "text-ink-dim"}>
-          <span className="inline-flex items-center gap-1">
-            {anomaly.recommended_action} <IconArrowRight className="shrink-0 text-[11px]" />
-          </span>
-        </Row>
+        {anomaly.recommended_action && (
+          <Row label="Action" tone={isHigh ? "font-medium text-signal-high" : "text-ink-dim"}>
+            <span className="inline-flex items-center gap-1">
+              {anomaly.recommended_action} <IconArrowRight className="shrink-0 text-[11px]" />
+            </span>
+          </Row>
+        )}
       </div>
     </div>
   );
