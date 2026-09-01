@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "description": "Supplementary synthetic demand history for deterministic demo scenarios. Does NOT modify official asset records.",
+  "method": "3-month weighted moving average (weights 1-2-3); planning estimate only.",
+  "demand_history": [
+    {
+      "site_id": "S003",
+      "equipment_type": "Excavator",
+      "periods": [
+        { "period": "2024-11", "count": 2 },
+        { "period": "2024-12", "count": 2 },
+        { "period": "2025-01", "count": 2 },
+        { "period": "2025-02", "count": 3 },
+        { "period": "2025-03", "count": 3 },
+        { "period": "2025-04", "count": 3 }
+      ],
+      "notes": "East Infrastructure Hub excavator demand. Trend: stable at 2 units, stepped up to 3 in Feb 2025 and stayed."
+    }
+  ]
+}
