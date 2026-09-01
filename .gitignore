@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!caterpillar-smart-rental/frontend/src/lib/
 lib64/
 parts/
 sdist/
