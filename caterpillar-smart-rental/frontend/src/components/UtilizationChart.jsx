@@ -3,8 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export function UtilizationChart({ engineHoursPerDay, idleHoursPerDay }) {
   const data = [{ name: "hrs/day", Engine: engineHoursPerDay, Idle: idleHoursPerDay }];
   return (
-    <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Engine vs. Idle Hours / Day</div>
+    <div className="border border-hairline bg-panel p-4 shadow-[var(--shadow-panel)]">
+      <div className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">Engine vs. Idle Hours / Day</div>
       <ResponsiveContainer width="100%" height={140}>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2f333d" horizontal={false} />

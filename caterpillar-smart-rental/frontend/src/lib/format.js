@@ -11,41 +11,53 @@ export const STATUS_LABEL = {
 export const STATUS_TONE = {
   RENTED: "text-ink-dim bg-panel-raised border-hairline-strong",
   RETURNED: "text-signal-healthy bg-signal-healthy/10 border-signal-healthy/30",
-  OVERDUE: "text-signal-high bg-signal-high/10 border-signal-high/40",
+  OVERDUE: "text-signal-critical bg-signal-critical/10 border-signal-critical/45",
   APPROACHING_RETURN: "text-signal-medium bg-signal-medium/10 border-signal-medium/30",
   UNASSIGNED: "text-signal-high bg-signal-high/10 border-signal-high/40",
   MAINTENANCE: "text-signal-medium bg-signal-medium/10 border-signal-medium/30",
 };
 
-// Backend severities are LOW|MEDIUM|HIGH|CRITICAL. The direction contract
-// commits to one accent color for "attention required" — CRITICAL reuses
-// the HIGH treatment (never a second color) but ranks above it.
+// Backend severities are LOW|MEDIUM|HIGH|CRITICAL. CRITICAL now carries its
+// own alarm-red signal, distinct from HIGH's safety yellow — a real gauge
+// cluster never collapses "caution" and "alarm" into one lamp color, and a
+// single accent for both read as flat/generic. Action controls (Check In,
+// Run Scenario, Reset Demo) stay on brand-yellow regardless of severity —
+// that's the product's action color, a different job from status signaling.
 export const SEVERITY_TONE = {
-  CRITICAL: "text-signal-high bg-signal-high/10 border-signal-high/40",
+  CRITICAL: "text-signal-critical bg-signal-critical/10 border-signal-critical/45",
   HIGH: "text-signal-high bg-signal-high/10 border-signal-high/40",
   MEDIUM: "text-signal-medium bg-signal-medium/10 border-signal-medium/30",
   LOW: "text-signal-low bg-signal-low/10 border-signal-low/30",
 };
 
-// Filled signal-bar device (not a CSS border) — the instrument-panel's own
-// left-edge indicator, per the committed direction contract.
+// Filled signal-dot device (small circular indicator only — never a colored
+// border-left/right bar) for pills and gauge markers.
 export const SEVERITY_BAR = {
-  CRITICAL: "bg-signal-high",
+  CRITICAL: "bg-signal-critical",
   HIGH: "bg-signal-high",
   MEDIUM: "bg-signal-medium",
   LOW: "bg-signal-low",
 };
 
+// Severity-tinted card/row frame — replaces a decorative edge bar with a
+// colored 1px border, so the card's own outline carries the signal.
+export const SEVERITY_BORDER = {
+  CRITICAL: "border-signal-critical/45",
+  HIGH: "border-signal-high/35",
+  MEDIUM: "border-signal-medium/30",
+  LOW: "border-hairline",
+};
+
 // Subtle row/panel wash reserved for HIGH/CRITICAL only — never a full-card wash.
 export const SEVERITY_WASH = {
-  CRITICAL: "bg-signal-high/[0.05]",
+  CRITICAL: "bg-signal-critical/[0.06]",
   HIGH: "bg-signal-high/[0.05]",
   MEDIUM: "",
   LOW: "",
 };
 
 export const SEVERITY_TEXT = {
-  CRITICAL: "text-signal-high",
+  CRITICAL: "text-signal-critical",
   HIGH: "text-signal-high",
   MEDIUM: "text-signal-medium",
   LOW: "text-signal-low",

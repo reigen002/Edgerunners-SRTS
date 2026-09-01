@@ -63,7 +63,7 @@ export function Dashboard() {
     : null;
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-4 p-4 sm:p-6">
+    <div className="mx-auto max-w-[1440px] space-y-5 p-4 sm:p-7">
       <KpiCluster
         items={[
           { label: "Fleet Size", value: assets.length },
@@ -75,15 +75,15 @@ export function Dashboard() {
 
       <HeroAssetPanel asset={heroAsset} recommendation={heroRecommendation} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_380px]">
         <FleetTable assets={assets} />
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AlertsFeed alerts={alerts} />
           <FleetMap sites={sites} assets={assets} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <ForecastPanel forecast={risingForecast} />
         <RecommendationPanel recommendations={recommendations} showAsset />
       </div>

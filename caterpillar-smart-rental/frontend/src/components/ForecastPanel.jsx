@@ -13,11 +13,11 @@ export function ForecastPanel({ forecast }) {
 
   return (
     <div className="border border-hairline bg-panel shadow-[var(--shadow-panel)]">
-      <div className="flex items-center gap-1.5 border-b border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <div className="flex items-center gap-1.5 border-b border-hairline px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
         <IconTrend /> Demand Forecast · {forecast.equipment_type}{forecast.site_id ? ` / ${forecast.site_id}` : ""}
       </div>
 
-      <div className="p-3">
+      <div className="p-4">
         <ResponsiveContainer width="100%" height={150}>
           <BarChart data={data} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#2f333d" vertical={false} />
@@ -31,18 +31,18 @@ export function ForecastPanel({ forecast }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-        <p className="mt-1 text-[11px] text-ink-faint">Planning estimate — moving-average trend, not predictive ML.</p>
+        <p className="mt-1.5 text-[12px] text-ink-faint">Planning estimate — moving-average trend, not predictive ML.</p>
       </div>
 
-      <div className="border-t border-hairline px-3 py-2.5">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Recommended Fleet Size</div>
-        <div className="mt-0.5 font-mono text-lg font-semibold tabular-nums text-ink">{forecast.recommended_allocation} unit{forecast.recommended_allocation === 1 ? "" : "s"}</div>
-        <p className="mt-1 text-[13px] leading-snug text-ink-dim">{forecast.allocation_rationale}</p>
+      <div className="border-t border-hairline px-4 py-3">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Recommended Fleet Size</div>
+        <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink">{forecast.recommended_allocation} unit{forecast.recommended_allocation === 1 ? "" : "s"}</div>
+        <p className="mt-1.5 text-[14px] leading-snug text-ink-dim">{forecast.allocation_rationale}</p>
       </div>
 
       {forecast.projected_gap != null && (
-        <div className="border-t border-hairline px-3 py-2.5">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
+        <div className="border-t border-hairline px-4 py-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-4">
             {[
               ["Forecast demand", forecast.peak_forecast_demand],
               ["Available supply", forecast.supply_available],
@@ -50,31 +50,31 @@ export function ForecastPanel({ forecast }) {
               ["Known supply", forecast.supply_total_known],
             ].map(([label, value]) => (
               <div key={label}>
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{label}</div>
-                <div className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-ink">{value}</div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{label}</div>
+                <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums text-ink">{value}</div>
               </div>
             ))}
           </div>
-          <div className={`mt-2 font-mono text-sm font-semibold ${forecast.projected_gap > 0 ? "text-signal-high" : "text-signal-healthy"}`}>
+          <div className={`mt-2.5 font-mono text-[15px] font-semibold ${forecast.projected_gap > 0 ? "text-signal-critical" : "text-signal-healthy"}`}>
             Projected gap: {forecast.projected_gap} unit{forecast.projected_gap === 1 ? "" : "s"}
           </div>
         </div>
       )}
 
       {forecast.allocation_candidates?.length > 0 && (
-        <div className="border-t border-hairline px-3 py-2.5 space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Recommended Action</div>
+        <div className="border-t border-hairline px-4 py-3 space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Recommended Action</div>
           {forecast.allocation_candidates.map((c) => (
             <Link
               key={c.asset_id}
               to={`/asset/${c.asset_id}`}
-              className="flex items-center gap-1.5 text-[13px] font-medium text-ink hover:text-signal-high"
+              className="flex items-center gap-1.5 text-[14px] font-medium text-ink hover:text-signal-high"
             >
               <IconArrowRight className="shrink-0 text-signal-high" /> {c.action}
             </Link>
           ))}
           {forecast.projected_gap > 0 && (
-            <p className="text-[12px] text-ink-faint">
+            <p className="text-[13px] text-ink-faint">
               After recovery, {forecast.projected_gap} unit{forecast.projected_gap === 1 ? "" : "s"} of demand remains uncovered.
             </p>
           )}
@@ -82,17 +82,17 @@ export function ForecastPanel({ forecast }) {
       )}
 
       {returning.length > 0 && (
-        <div className="border-t border-hairline px-3 py-2">
-          <div className="mb-1.5 text-[11px] text-ink-faint">Expected returning — could cover the next period</div>
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="border-t border-hairline px-4 py-2.5">
+          <div className="mb-2 text-[12px] text-ink-faint">Expected returning — could cover the next period</div>
+          <div className="flex flex-wrap items-center gap-2">
             {returning.map((r) => (
               <Link
                 key={r.asset_id}
                 to={`/asset/${r.asset_id}`}
-                className="flex items-center gap-1 border border-signal-high/40 bg-signal-high/[0.06] px-2 py-0.5 font-mono text-[12px] text-signal-high hover:bg-signal-high/[0.12]"
+                className="flex items-center gap-1 border border-signal-high/40 bg-signal-high/[0.06] px-2.5 py-1 font-mono text-[13px] text-signal-high hover:bg-signal-high/[0.12]"
                 title={r.expected_return_date ? `Expected back ${formatDate(r.expected_return_date)}` : undefined}
               >
-                {r.asset_id} <IconArrowRight className="text-[10px]" />
+                {r.asset_id} <IconArrowRight className="text-[11px]" />
               </Link>
             ))}
           </div>

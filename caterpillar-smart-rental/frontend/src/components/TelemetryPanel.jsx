@@ -46,9 +46,9 @@ function ScenarioRunner({ onRun }) {
 
 function Gauge({ label, value, unit, warn }) {
   return (
-    <div className={`border px-3 py-2 ${warn ? "border-signal-high/40 bg-signal-high/[0.06]" : "border-hairline bg-panel-raised"}`}>
-      <div className="text-[10px] font-medium uppercase tracking-wide text-ink-faint">{label}</div>
-      <div className={`mt-0.5 font-mono text-xl font-semibold tabular-nums ${warn ? "text-signal-high" : "text-ink"}`}>
+    <div className={`border px-3.5 py-2.5 ${warn ? "border-signal-high/40 bg-signal-high/[0.06]" : "border-hairline bg-panel-raised"}`}>
+      <div className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">{label}</div>
+      <div className={`mt-1 font-mono text-[22px] font-semibold tabular-nums ${warn ? "text-signal-high" : "text-ink"}`}>
         {value}{unit}
       </div>
     </div>
@@ -84,30 +84,30 @@ export function TelemetryPanel({ frames, onFrame, onRunScenario }) {
   if (!frames.length) {
     return (
       <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
-        <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <div className="mb-3 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
           <IconGauge /> Live Telemetry Playback
         </div>
         {onRunScenario && <ScenarioRunner onRun={onRunScenario} />}
-        <p className="text-sm text-ink-faint">No telemetry recorded for this asset yet. Run a scenario above to generate readings.</p>
+        <p className="text-[14px] text-ink-faint">No telemetry recorded for this asset yet. Run a scenario above to generate readings.</p>
       </div>
     );
   }
 
   return (
-    <div className="border border-hairline bg-panel p-3 shadow-[var(--shadow-panel)]">
+    <div className="border border-hairline bg-panel p-4 shadow-[var(--shadow-panel)]">
       {onRunScenario && <ScenarioRunner onRun={onRunScenario} />}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <div className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
           <IconGauge /> Live Telemetry Playback
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => { if (i >= frames.length - 1) setI(0); setPlaying((p) => !p); }}
-            className="border border-hairline-strong px-2.5 py-1 text-xs text-ink hover:bg-panel-raised"
+            className="border border-hairline-strong px-3 py-1.5 text-[13px] text-ink hover:bg-panel-raised"
           >
             {playing ? "Pause" : "Play"}
           </button>
-          <span className="font-mono text-xs text-ink-faint">
+          <span className="font-mono text-[13px] text-ink-faint">
             frame {i + 1}/{frames.length}
           </span>
         </div>
@@ -119,17 +119,17 @@ export function TelemetryPanel({ frames, onFrame, onRunScenario }) {
         max={frames.length - 1}
         value={i}
         onChange={(e) => { setPlaying(false); setI(Number(e.target.value)); }}
-        className="mt-3 w-full accent-signal-high"
+        className="mt-3.5 w-full accent-signal-high"
       />
 
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Gauge label="Engine Temp" value={frame.engine_temp_c} unit="°C" warn={frame.engine_temp_c > 105} />
         <Gauge label="Fuel" value={frame.fuel_pct} unit="%" />
         <Gauge label="Fuel Rate" value={frame.fuel_rate_lph} unit=" L/h" />
         <Gauge label="Seatbelt" value={frame.seatbelt} unit="" warn={frame.seatbelt === "OFF"} />
       </div>
       {frame.fault_code && (
-        <div className="mt-2 flex items-center gap-2 border border-signal-high/50 bg-signal-high/[0.08] px-3 py-2 font-mono text-xs font-semibold tracking-wide text-signal-high">
+        <div className="mt-2.5 flex items-center gap-2 border border-signal-high/50 bg-signal-high/[0.08] px-3.5 py-2.5 font-mono text-[13px] font-semibold tracking-wide text-signal-high">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal-high" />
           FAULT: {frame.fault_code}
         </div>
