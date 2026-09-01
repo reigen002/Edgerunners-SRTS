@@ -1,5 +1,5 @@
 const EVENT_TONE = {
-  OVERDUE_FLAG: "bg-signal-high",
+  OVERDUE_FLAGGED: "bg-signal-high",
   TELEMETRY_ALERT: "bg-signal-high",
   SAFETY_EVENT: "bg-signal-high",
   MAINTENANCE_FLAG: "bg-signal-high",

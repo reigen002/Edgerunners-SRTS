@@ -132,7 +132,11 @@ function adaptAnomaly(alert) {
 }
 
 function adaptEvent(e) {
-  const TITLE = { checkout: "Checked out", checkin: "Returned to dealership" };
+  const TITLE = {
+    checkout: "Checked out",
+    checkin: "Returned to dealership",
+    overdue_flagged: "Flagged overdue",
+  };
   return {
     id: `EV-${e.id}`,
     asset_id: e.asset_id,

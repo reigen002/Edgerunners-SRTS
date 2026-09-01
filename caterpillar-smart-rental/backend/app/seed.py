@@ -93,6 +93,46 @@ ASSETS = [
 ]
 
 
+def _seed_lifecycle_events(db: Session) -> None:
+    """
+    Generate CHECKOUT/CHECKIN/OVERDUE_FLAG events from each asset's official
+    checkout/return dates, so the lifecycle timeline isn't empty until a live
+    checkout/checkin happens. Skips any asset that already has events (e.g.
+    one already mutated by a live checkout/checkin) to stay idempotent.
+    """
+    from app.clock import get_demo_now
+    demo_now = get_demo_now()
+
+    for a in ASSETS:
+        asset_id = a["id"]
+        if db.query(RentalEvent).filter(RentalEvent.asset_id == asset_id).first():
+            continue
+
+        checkout_date = a["checkout_date"]
+        return_date = a["expected_return_date"]
+
+        if checkout_date:
+            db.add(RentalEvent(
+                asset_id=asset_id, event_type="checkout", timestamp=checkout_date,
+                operator_id=a.get("operator_id"), site_id=a.get("site_id"),
+                customer_name=a.get("customer_name"), expected_return_date=return_date,
+                performed_by="Dealer Desk", identifier_method="manual",
+            ))
+
+        if a["status"] == "available" and return_date:
+            db.add(RentalEvent(
+                asset_id=asset_id, event_type="checkin", timestamp=return_date,
+                performed_by="Dealer Desk", identifier_method="manual",
+            ))
+        elif a["status"] == "checked_out" and return_date and return_date < demo_now:
+            db.add(RentalEvent(
+                asset_id=asset_id, event_type="overdue_flagged", timestamp=return_date,
+                expected_return_date=return_date, performed_by="System",
+            ))
+
+    db.commit()
+
+
 def seed_database(db: Session) -> dict:
     """
     Insert all reference data if the database is empty.
@@ -119,6 +159,7 @@ def seed_database(db: Session) -> dict:
             counts["assets"] += 1
 
     db.commit()
+    _seed_lifecycle_events(db)
     return counts
 
 
