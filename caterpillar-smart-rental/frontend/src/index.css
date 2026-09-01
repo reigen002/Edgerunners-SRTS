@@ -16,6 +16,8 @@
   --color-ink-dim: #9aa0ac;
   --color-ink-faint: #656b78;
 
+  --color-signal-critical: #ff4438;
+  --color-signal-critical-ink: #2a0704;
   --color-signal-high: #ffc72c;
   --color-signal-high-ink: #1a1503;
   --color-signal-medium: #ff9f43;

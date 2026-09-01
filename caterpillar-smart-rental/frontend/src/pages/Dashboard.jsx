@@ -44,15 +44,26 @@ export function Dashboard() {
     forecasts.find((f) => f && f.forecast[0].demand >= f.history[f.history.length - 1]?.demand) ??
     forecasts[0];
 
+  // An anomalous asset that also feeds a forecasted allocation decision tells
+  // the fuller Spot -> Explain -> Act -> Predict story (its recovery has a
+  // named destination), so it leads over a same-severity asset that's a
+  // dead-end alert with no follow-on business decision.
+  const allocationAssetIds = new Set(
+    recommendations.filter((r) => r.issue?.startsWith("Forecast demand gap")).map((r) => r.asset_id)
+  );
   const heroAsset = [...assets]
     .filter((a) => a.highest_severity)
-    .sort((a, b) => (severityRank[a.highest_severity] - severityRank[b.highest_severity]) || (b.anomaly_count - a.anomaly_count))[0];
+    .sort((a, b) => {
+      const allocDiff = (allocationAssetIds.has(b.equipment_id) ? 1 : 0) - (allocationAssetIds.has(a.equipment_id) ? 1 : 0);
+      if (allocDiff) return allocDiff;
+      return (severityRank[a.highest_severity] - severityRank[b.highest_severity]) || (b.anomaly_count - a.anomaly_count);
+    })[0];
   const heroRecommendation = heroAsset
     ? recommendations.find((r) => r.asset_id === heroAsset.equipment_id)
     : null;
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-4 p-4 sm:p-6">
+    <div className="mx-auto max-w-[1440px] space-y-5 p-4 sm:p-7">
       <KpiCluster
         items={[
           { label: "Fleet Size", value: assets.length },
@@ -64,15 +75,15 @@ export function Dashboard() {
 
       <HeroAssetPanel asset={heroAsset} recommendation={heroRecommendation} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_380px]">
         <FleetTable assets={assets} />
-        <div className="space-y-4">
+        <div className="space-y-5">
           <AlertsFeed alerts={alerts} />
           <FleetMap sites={sites} assets={assets} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <ForecastPanel forecast={risingForecast} />
         <RecommendationPanel recommendations={recommendations} showAsset />
       </div>
