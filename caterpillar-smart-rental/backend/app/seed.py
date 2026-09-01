@@ -6,7 +6,7 @@ NULL site/operator values are intentional anomalies and preserved exactly.
 """
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-from app.models import Asset, Site, Operator, RentalEvent
+from app.models import Alert, Asset, Site, Operator, RentalEvent, Telemetry
 
 
 SITES = [
@@ -127,7 +127,7 @@ def reset_database(db: Session) -> dict:
     Delete all data and re-seed from scratch.
     Called by POST /admin/reset.
     """
-    for model in [RentalEvent, Asset, Operator, Site]:
+    for model in [Alert, Telemetry, RentalEvent, Asset, Operator, Site]:
         db.query(model).delete()
     db.commit()
     return seed_database(db)

@@ -14,7 +14,7 @@ from app.database import get_db
 from app.models import Alert, Asset, Telemetry
 from app.schemas import AlertOut
 from app.utilization import calculate_utilization
-from datetime import datetime, timezone
+from app.clock import get_demo_now
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 
@@ -101,12 +101,20 @@ def _generate_alerts_for_asset(db: Session, asset: Asset) -> list[Alert]:
             )
         )
 
-    # Overdue check
+    # Overdue check — normalize expected_return_date to UTC for comparison
+    # (SQLite stores datetimes offset-naive; we treat them as UTC)
     if (
         asset.status == "checked_out"
         and asset.expected_return_date
-        and asset.expected_return_date < datetime.now(tz=timezone.utc)
     ):
+        _ret = asset.expected_return_date
+        if _ret.tzinfo is None:
+            from datetime import timezone as _tz
+            _ret = _ret.replace(tzinfo=_tz.utc)
+        _is_overdue = _ret < get_demo_now()
+    else:
+        _is_overdue = False
+    if _is_overdue:
         new_alerts.append(
             make_alert(
                 "overdue", "CRITICAL",
