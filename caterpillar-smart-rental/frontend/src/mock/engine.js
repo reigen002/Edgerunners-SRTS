@@ -229,6 +229,10 @@ export function assetSummary(equipmentId) {
     equipment_id: equipmentId,
     type: asset.type,
     status: status(asset, state),
+    raw_status: state.current_state === "RETURNED" ? "available" : "checked_out",
+    days_overdue: state.current_state !== "RETURNED" && daysBetween(asset.checkin_date, DEMO_NOW) > 0
+      ? daysBetween(asset.checkin_date, DEMO_NOW)
+      : null,
     site_id: state.site_id,
     site_name: site?.name ?? null,
     operator_id: state.operator_id,

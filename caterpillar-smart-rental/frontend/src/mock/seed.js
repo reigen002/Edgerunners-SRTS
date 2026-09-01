@@ -50,16 +50,9 @@ export const ASSET_STATE = {
   EQX1007: { current_state: "RENTED", site_id: null, operator_id: null, customer_id: null, expected_checkin: "2025-04-01" },
 };
 
-export const ANOMALY_THRESHOLDS = {
-  low_utilization_pct: 30,
-  low_utilization_severe_pct: 10,
-  excessive_idle_hours: 6,
-  excessive_idle_severe_hours: 10,
-  return_approaching_days: 5,
-  engine_overheat_c: 105,
-  abnormal_fuel_lph: 25,
-  location_mismatch_km: 5,
-};
+// Canonical source moved to lib/format.js (shared with real-mode display
+// coloring); re-exported here so mock/engine.js's existing import keeps working.
+export { DISPLAY_THRESHOLDS as ANOMALY_THRESHOLDS } from "../lib/format";
 
 // site_id, equipment_type, period (YYYY-MM), count — rising S003/Excavator trend powers the forecast demo.
 export const DEMAND_HISTORY = [
