@@ -27,7 +27,7 @@ export function HeroAssetPanel({ asset, recommendation }) {
         <div className="flex items-center gap-3 sm:pl-4">
           {recommendation && (
             <div className="hidden max-w-xs border-l border-hairline pl-4 text-[13px] text-ink-dim md:block">
-              <span className="font-medium text-ink-faint">Recommended — </span>{recommendation.action}
+              <span className="font-medium text-ink-faint">Recommended — </span>{recommendation.recommendation}
             </div>
           )}
           <Link

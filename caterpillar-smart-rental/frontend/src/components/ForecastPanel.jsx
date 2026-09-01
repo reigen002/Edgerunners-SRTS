@@ -40,6 +40,47 @@ export function ForecastPanel({ forecast }) {
         <p className="mt-1 text-[13px] leading-snug text-ink-dim">{forecast.allocation_rationale}</p>
       </div>
 
+      {forecast.projected_gap != null && (
+        <div className="border-t border-hairline px-3 py-2.5">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
+            {[
+              ["Forecast demand", forecast.peak_forecast_demand],
+              ["Available supply", forecast.supply_available],
+              ["Recoverable supply", forecast.supply_recoverable],
+              ["Known supply", forecast.supply_total_known],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{label}</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-ink">{value}</div>
+              </div>
+            ))}
+          </div>
+          <div className={`mt-2 font-mono text-sm font-semibold ${forecast.projected_gap > 0 ? "text-signal-high" : "text-signal-healthy"}`}>
+            Projected gap: {forecast.projected_gap} unit{forecast.projected_gap === 1 ? "" : "s"}
+          </div>
+        </div>
+      )}
+
+      {forecast.allocation_candidates?.length > 0 && (
+        <div className="border-t border-hairline px-3 py-2.5 space-y-1.5">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Recommended Action</div>
+          {forecast.allocation_candidates.map((c) => (
+            <Link
+              key={c.asset_id}
+              to={`/asset/${c.asset_id}`}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-ink hover:text-signal-high"
+            >
+              <IconArrowRight className="shrink-0 text-signal-high" /> {c.action}
+            </Link>
+          ))}
+          {forecast.projected_gap > 0 && (
+            <p className="text-[12px] text-ink-faint">
+              After recovery, {forecast.projected_gap} unit{forecast.projected_gap === 1 ? "" : "s"} of demand remains uncovered.
+            </p>
+          )}
+        </div>
+      )}
+
       {returning.length > 0 && (
         <div className="border-t border-hairline px-3 py-2">
           <div className="mb-1.5 text-[11px] text-ink-faint">Expected returning — could cover the next period</div>

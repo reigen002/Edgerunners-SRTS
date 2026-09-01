@@ -162,9 +162,9 @@ function adaptTelemetryFrame(t) {
   };
 }
 
-function adaptRecommendation(r) {
+function adaptRecommendation(r, idx = 0) {
   return {
-    id: `REC-${r.asset}`,
+    id: `REC-${r.asset}-${idx}`,
     asset_id: r.asset,
     severity: r.severity,
     issue: r.issue,
@@ -173,6 +173,8 @@ function adaptRecommendation(r) {
   };
 }
 
+// Site × equipment-type rows carry supply/gap/candidate fields; equipment-type
+// rows have them as null. Pass through as-is so the UI can tell the two apart.
 function adaptForecast(f) {
   return {
     equipment_type: f.equipment_type,
@@ -182,6 +184,12 @@ function adaptForecast(f) {
     expected_returning: f.expected_returning,
     recommended_allocation: f.recommended_allocation,
     allocation_rationale: f.allocation_rationale,
+    supply_available: f.supply_available ?? null,
+    supply_recoverable: f.supply_recoverable ?? null,
+    supply_total_known: f.supply_total_known ?? null,
+    peak_forecast_demand: f.peak_forecast_demand ?? null,
+    projected_gap: f.projected_gap ?? null,
+    allocation_candidates: f.allocation_candidates ?? null,
   };
 }
 
@@ -226,6 +234,12 @@ function adaptMockForecast(f) {
     })),
     recommended_allocation: Math.round(f.forecast[0]?.count ?? 0),
     allocation_rationale: `${f.method}. ${f.expected_requirement}`,
+    supply_available: null,
+    supply_recoverable: null,
+    supply_total_known: null,
+    peak_forecast_demand: null,
+    projected_gap: null,
+    allocation_candidates: null,
   };
 }
 
@@ -265,12 +279,15 @@ export const api = {
     ]);
     rememberReferenceData(detail);
     const alertsByAsset = new Map([[id, [...alerts].sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])]]);
-    const rec = recommendations.find((r) => r.asset === id);
+    // An asset can carry more than one recommendation now (its own anomaly
+    // recommendation plus a forecast-driven allocation recommendation) — keep
+    // all of them, not just the first match.
+    const assetRecs = recommendations.filter((r) => r.asset === id);
     const events = await realFetch(`/assets/${id}/events`);
     return {
       ...adaptAssetSummary(detail, alertsByAsset),
       anomalies: alertsByAsset.get(id).map(adaptAnomaly),
-      recommendations: rec ? [adaptRecommendation(rec)] : [],
+      recommendations: assetRecs.map((r, i) => adaptRecommendation(r, i)),
       events: events.map(adaptEvent).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
       telemetry_current: null,
       assignment: {
@@ -369,7 +386,7 @@ export const api = {
   async getRecommendations() {
     if (USE_MOCK) return ok({ recommendations: consolidateMockRecommendations(engine.allRecommendations()) });
     const rows = await realFetch("/recommendations");
-    return { recommendations: rows.map(adaptRecommendation) };
+    return { recommendations: rows.map((r, i) => adaptRecommendation(r, i)) };
   },
 
   async getHealth() {
