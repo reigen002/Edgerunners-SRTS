@@ -36,7 +36,13 @@ export function Dashboard() {
   const needsAttention = assets.filter((a) => a.anomaly_count > 0).length;
   const highAlerts = alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL").length;
   const avgUtilization = Math.round(assets.reduce((s, a) => s + a.utilization_pct, 0) / assets.length);
-  const risingForecast = forecasts.find((f) => f && f.forecast[0].demand >= f.history[f.history.length - 1]?.demand) ?? forecasts[0];
+  // Prefer a site-level forecast that actually has an allocation call to make
+  // (backend-computed gap + candidate) over an arbitrary "demand isn't falling"
+  // equipment-type row — that's the one worth leading the demo with.
+  const risingForecast =
+    forecasts.find((f) => f && f.allocation_candidates?.length) ??
+    forecasts.find((f) => f && f.forecast[0].demand >= f.history[f.history.length - 1]?.demand) ??
+    forecasts[0];
 
   const heroAsset = [...assets]
     .filter((a) => a.highest_severity)

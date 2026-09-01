@@ -10,7 +10,7 @@ export function RecommendationPanel({ recommendations, showAsset = false }) {
   return (
     <div className="border border-hairline bg-panel shadow-[var(--shadow-panel)]">
       <div className="border-b border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-        Recommendations · One Decision Per Asset
+        Recommendations
       </div>
       <ul className="divide-y divide-hairline">
         {recommendations.map((r) => (
