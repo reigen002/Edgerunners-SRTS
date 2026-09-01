@@ -380,27 +380,10 @@ export const api = {
 
   async reset() {
     if (USE_MOCK) return ok({ status: "mock_reset" });
-    const result = await realFetch("/admin/reset", { method: "POST" });
-    // Seed data bug workaround (documented, not silent): the backend seeds
-    // every asset with status="available" regardless of checkout_date, so
-    // EQX1002/1004/1007 — which the official dataset implies are still
-    // out — never trigger the overdue alert until something checks them
-    // out for real. We correct this with an empty-body checkout via the
-    // contract's own endpoint: it leaves NULL site_id/operator_id and the
-    // existing expected_return_date untouched (checkout only overwrites
-    // fields that are actually sent), it just flips status to
-    // "checked_out" so the backend's own overdue/approaching-return logic
-    // can fire. This is a data-priming step, not a fabricated alert — the
-    // backend still computes and owns every anomaly. The real fix belongs
-    // in backend/app/seed.py (status should be "checked_out" for these
-    // three assets in the seed data itself).
-    // Sequential, not Promise.all: concurrent writes to the demo's SQLite
-    // file can lock-contend under uvicorn's default single-worker setup.
-    for (const id of ["EQX1002", "EQX1004", "EQX1007"]) {
-      await realFetch(`/assets/${id}/checkout`, { method: "POST", body: JSON.stringify({}) });
-    }
-    await realFetch("/alerts/refresh", { method: "POST" });
-    return result;
+    // backend/app/seed.py now seeds EQX1002/1004/1007 as checked_out
+    // directly, so /admin/reset alone (which also refreshes alerts
+    // server-side) restores the correct deterministic demo state.
+    return realFetch("/admin/reset", { method: "POST" });
   },
 };
 
