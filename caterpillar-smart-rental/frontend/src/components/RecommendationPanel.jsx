@@ -13,11 +13,18 @@ export function RecommendationPanel({ recommendations, showAsset = false }) {
         Recommendations
       </div>
       <ul className="divide-y divide-hairline">
-        {recommendations.map((r) => (
+        {recommendations.map((r) => {
+          const isAllocation = r.issue?.startsWith("Forecast demand gap");
+          return (
           <li key={r.id} className="relative py-3 pl-4 pr-3">
             <span className={`absolute inset-y-0 left-0 w-1 ${SEVERITY_BAR[r.severity] ?? "bg-hairline-strong"}`} />
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-[15px] font-semibold leading-snug text-ink">{r.issue}</h3>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+                  {isAllocation ? "Allocation — what to do with the fleet" : "Anomaly — what went wrong"}
+                </span>
+                <h3 className="text-[15px] font-semibold leading-snug text-ink">{r.issue}</h3>
+              </div>
               <SeverityPill severity={r.severity} />
             </div>
 
@@ -36,7 +43,8 @@ export function RecommendationPanel({ recommendations, showAsset = false }) {
               )}
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

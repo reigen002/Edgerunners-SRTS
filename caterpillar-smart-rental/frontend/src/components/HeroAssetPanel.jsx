@@ -22,6 +22,11 @@ export function HeroAssetPanel({ asset, recommendation }) {
             {asset.type} · {asset.anomaly_count} open anomal{asset.anomaly_count === 1 ? "y" : "ies"}.{" "}
             {asset.top_anomaly?.summary}
           </p>
+          {asset.idle_hours_per_day > 0 && asset.utilization_pct === 0 && (
+            <p className="mt-1 text-[12px] text-ink-faint">
+              {asset.idle_hours_per_day} idle hrs/day identified as recoverable utilization opportunity.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-3 sm:pl-4">
