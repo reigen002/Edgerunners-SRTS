@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const SITE_CENTER = [34.06, -117.43];
 
 function severityColor(sev) {
-  if (sev === "HIGH") return "#ffc72c";
+  if (sev === "HIGH" || sev === "CRITICAL") return "#ffc72c";
   if (sev === "MEDIUM") return "#ff9f43";
   return "#5b9bd5";
 }
@@ -26,16 +26,22 @@ export function FleetMap({ sites, assets, trace }) {
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {sites.map((s) => (
-          <CircleMarker
-            key={s.site_id}
-            center={[s.lat, s.lon]}
-            radius={s.asset_count > 0 ? 7 : 5}
-            pathOptions={{ color: "#9aa0ac", weight: 1.5, fillColor: "#232732", fillOpacity: 1 }}
-          >
-            <Tooltip direction="top">{s.name} · {s.asset_count} asset{s.asset_count === 1 ? "" : "s"}</Tooltip>
-          </CircleMarker>
-        ))}
+        {sites.map((s) => {
+          // Count from the live asset list rather than trusting a
+          // pre-computed field — the real backend has no /sites endpoint
+          // to source one from, so this stays correct in both modes.
+          const count = assets.filter((a) => a.site_id === s.site_id).length;
+          return (
+            <CircleMarker
+              key={s.site_id}
+              center={[s.lat, s.lon]}
+              radius={count > 0 ? 7 : 5}
+              pathOptions={{ color: "#9aa0ac", weight: 1.5, fillColor: "#232732", fillOpacity: 1 }}
+            >
+              <Tooltip direction="top">{s.name} · {count} asset{count === 1 ? "" : "s"}</Tooltip>
+            </CircleMarker>
+          );
+        })}
         {assets.filter((a) => a.location).map((a) => (
           <CircleMarker
             key={a.equipment_id}

@@ -8,7 +8,7 @@ import { FleetMap } from "../components/FleetMap";
 import { ForecastPanel } from "../components/ForecastPanel";
 import { RecommendationPanel } from "../components/RecommendationPanel";
 
-const severityRank = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+const severityRank = { CRITICAL: -1, HIGH: 0, MEDIUM: 1, LOW: 2 };
 
 export function Dashboard() {
   const [assets, setAssets] = useState(null);
@@ -16,27 +16,33 @@ export function Dashboard() {
   const [sites, setSites] = useState([]);
   const [forecasts, setForecasts] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    api.getAssets().then((r) => setAssets(r.assets));
+    // getAssets() populates the site/operator reference cache the mutation
+    // forms and getSites() depend on — must resolve before those fire.
+    api.getAssets().then((r) => {
+      setAssets(r.assets);
+      api.getSites().then((res) => setSites(res.sites));
+    }).catch((e) => setError(e.message || "Failed to load fleet."));
     api.getAlerts().then((r) => setAlerts(r.alerts));
-    api.getSites().then((r) => setSites(r.sites));
     api.getForecast().then((r) => setForecasts(r.forecasts));
     api.getRecommendations().then((r) => setRecommendations(r.recommendations));
   }, []);
 
+  if (error) return <div className="p-6 text-sm text-signal-high">Couldn't reach the backend — {error} Is the API running at the configured base URL?</div>;
   if (!assets) return <div className="p-6 text-sm text-ink-faint">Loading fleet…</div>;
 
   const needsAttention = assets.filter((a) => a.anomaly_count > 0).length;
-  const highAlerts = alerts.filter((a) => a.severity === "HIGH").length;
+  const highAlerts = alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL").length;
   const avgUtilization = Math.round(assets.reduce((s, a) => s + a.utilization_pct, 0) / assets.length);
-  const risingForecast = forecasts.find((f) => f && f.forecast[0].count >= f.history[f.history.length - 1].count) ?? forecasts[0];
+  const risingForecast = forecasts.find((f) => f && f.forecast[0].demand >= f.history[f.history.length - 1]?.demand) ?? forecasts[0];
 
   const heroAsset = [...assets]
     .filter((a) => a.highest_severity)
     .sort((a, b) => (severityRank[a.highest_severity] - severityRank[b.highest_severity]) || (b.anomaly_count - a.anomaly_count))[0];
   const heroRecommendation = heroAsset
-    ? recommendations.find((r) => r.asset_id === heroAsset.equipment_id && r.severity === "HIGH")
+    ? recommendations.find((r) => r.asset_id === heroAsset.equipment_id)
     : null;
 
   return (

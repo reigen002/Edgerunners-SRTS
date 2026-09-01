@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { StatusPill, SeverityPill } from "./StatusPill";
-import { SEVERITY_BAR, SEVERITY_WASH } from "../lib/format";
-import { ANOMALY_THRESHOLDS as T } from "../mock/seed";
+import { SEVERITY_BAR, SEVERITY_WASH, DISPLAY_THRESHOLDS as T } from "../lib/format";
 
-const severityRank = { HIGH: 0, MEDIUM: 1, LOW: 2, null: 3 };
+const severityRank = { CRITICAL: -1, HIGH: 0, MEDIUM: 1, LOW: 2, null: 3 };
 const columns = [
   { key: "equipment_id", label: "Asset" },
   { key: "type", label: "Type" },

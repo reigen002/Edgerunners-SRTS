@@ -1,10 +1,29 @@
+import { useEffect, useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard";
 import { AssetDetail } from "./pages/AssetDetail";
-import { DEMO_NOW } from "./mock/seed";
+import { api } from "./api/client";
 import { IconTruck, IconClock } from "./components/icons";
 
 export default function App() {
+  const [demoNow, setDemoNow] = useState(null);
+  const [resetting, setResetting] = useState(false);
+
+  useEffect(() => {
+    api.getHealth().then((h) => setDemoNow(h.demo_now)).catch(() => {});
+  }, []);
+
+  async function handleReset() {
+    if (resetting) return;
+    setResetting(true);
+    try {
+      await api.reset();
+      window.location.href = "/";
+    } catch {
+      setResetting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-ground">
       <header className="sticky top-0 z-[1100] flex items-center justify-between border-b border-hairline bg-ground/95 px-4 py-2.5 shadow-[var(--shadow-panel)] backdrop-blur sm:px-6">
@@ -15,9 +34,21 @@ export default function App() {
           <span className="text-sm font-bold tracking-wide text-ink">SRTS</span>
           <span className="hidden text-[13px] text-ink-faint sm:inline">Smart Rental Tracking · Dealer Ops</span>
         </Link>
-        <div className="flex items-center gap-1.5 border border-hairline bg-panel px-2 py-1 font-mono text-[12px] tabular-nums text-ink-dim">
-          <IconClock className="text-ink-faint" />
-          {DEMO_NOW.replace("T", " ")}
+        <div className="flex items-center gap-2">
+          {demoNow && (
+            <div className="flex items-center gap-1.5 border border-hairline bg-panel px-2 py-1 font-mono text-[12px] tabular-nums text-ink-dim" title="Fixed demo clock — not the real system date">
+              <IconClock className="text-ink-faint" />
+              {demoNow.replace("T", " ").replace("Z", "")} <span className="text-ink-faint">(demo)</span>
+            </div>
+          )}
+          <button
+            onClick={handleReset}
+            disabled={resetting}
+            className="border border-hairline-strong px-2.5 py-1.5 text-[12px] text-ink-dim hover:border-signal-high/50 hover:text-signal-high disabled:opacity-60"
+            title="Restore official seed state — clears telemetry, alerts, and lifecycle mutations"
+          >
+            {resetting ? "Resetting…" : "Reset Demo"}
+          </button>
         </div>
       </header>
       <main>

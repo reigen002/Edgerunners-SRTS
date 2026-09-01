@@ -21,14 +21,14 @@ function AlertRow({ a, navigate, prominent }) {
 
 export function AlertsFeed({ alerts }) {
   const navigate = useNavigate();
-  const high = alerts.filter((a) => a.severity === "HIGH");
-  const rest = alerts.filter((a) => a.severity !== "HIGH");
+  const high = alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL");
+  const rest = alerts.filter((a) => a.severity !== "HIGH" && a.severity !== "CRITICAL");
 
   return (
     <div className="border border-hairline bg-panel shadow-[var(--shadow-panel)]">
       <div className="flex items-center justify-between border-b border-hairline px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
         <span>Alerts Feed</span>
-        {high.length > 0 && <span className="text-signal-high">{high.length} high</span>}
+        {high.length > 0 && <span className="text-signal-high">{high.length} urgent</span>}
       </div>
       <div className="max-h-96 overflow-y-auto">
         {alerts.length === 0 && (
