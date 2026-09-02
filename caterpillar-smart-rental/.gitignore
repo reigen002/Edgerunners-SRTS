@@ -4,3 +4,6 @@
 # rows and never updates existing ones.
 backend/*.db
 backend/*.db-journal
+
+# graphify knowledge graph output (regenerated locally via /graphify)
+graphify-out/

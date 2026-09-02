@@ -6,7 +6,7 @@
 
 **Architecture:** Two local processes — a FastAPI+SQLite backend serving a REST API, and a React+Vite frontend consuming it — plus a set of deterministic seed/scenario data files. All "AI" (anomalies, forecast, recommendations) is explainable rule/statistics code living as ordinary backend services. No Docker, no message bus, no external accounts.
 
-**Tech Stack:** React 18 + Vite + Tailwind + Leaflet/OpenStreetMap (frontend). FastAPI + Uvicorn + SQLite + pandas (backend). Deterministic CSV/JSON data files (data).
+**Tech Stack:** React 18 + Vite + Tailwind + Leaflet/OpenStreetMap (frontend). FastAPI + Uvicorn + SQLite + SQLAlchemy + NumPy (backend). Deterministic CSV/JSON data files (data).
 
 **Spec:** `caterpillar-smart-rental/docs/HACKATHON_SPEC.md`
 
@@ -165,7 +165,7 @@ Fully specified in **`docs/API_CONTRACT.md`** (frozen). Summary of endpoints: `G
 
 ## 9. Backend Structure
 
-FastAPI app; routers thin, services hold logic. Startup: `db.init()` → `seed.load_all()` → `telemetry_sim.generate_all()`. Services are pure functions over DB rows + `anomaly_thresholds.json`, returning contract shapes. `config.DEMO_NOW` injected everywhere a "now" is needed. `requirements.txt`: `fastapi uvicorn[standard] pandas pydantic` (pandas optional — stdlib `csv` is enough; include only if it saves time).
+FastAPI app; routers thin, services hold logic. Startup: `db.init()` → `seed.load_all()` → `telemetry_sim.generate_all()`. Services are pure functions over DB rows + `anomaly_thresholds.json`, returning contract shapes. `config.DEMO_NOW` injected everywhere a "now" is needed. `requirements.txt`: `fastapi uvicorn[standard] sqlalchemy pydantic numpy` (pandas was considered but skipped — stdlib `csv`/NumPy proved enough).
 
 ---
 

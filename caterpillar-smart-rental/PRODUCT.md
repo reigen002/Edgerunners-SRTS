@@ -32,7 +32,7 @@ Desk-based, single-session review during a dealer's workday; also the live 5-min
 - Deterministic demo clock `DEMO_NOW = 2025-05-12T09:00:00` — all status/overdue logic is computed against this fixed value, never wall-clock time.
 - Frontend built mock-first against the frozen `docs/API_CONTRACT.md` shapes; swapping the mock layer for the real backend (Jimmy's FastAPI service) must require no shape changes.
 - No auth/multi-user, no chatbot (lowest priority, build only if everything else is done), no production infra — this is a hackathon MVP vertical slice, not a production platform (`docs/HACKATHON_SPEC.md` §16, §26).
-- Hero anomaly asset: EQX1002 (no site, no operator, 0 engine hrs/day, 11 idle hrs/day, 20 operating days, 43 days overdue) — the UI must make its operational significance legible at a glance without fabricating evidence.
+- Hero anomaly asset: EQX1007 (unassigned excavator, 0 engine hrs/day, 12 idle hrs/day, 0% productive utilization, overdue) — the one anomaly that also feeds a forecasted allocation decision, so it carries the dashboard hero panel and the full Spot→Explain→Act→Predict arc (`docs/DEMO_FLOW.md`). EQX1002 (no site, no operator, 0 engine hrs/day, 11 idle hrs/day, 20 operating days, 43 days overdue) remains the secondary CRITICAL/overdue story, still visible at the top of the fleet table and alerts feed. The UI must make both assets' operational significance legible at a glance without fabricating evidence.
 
 ## Brand Commitments
 
