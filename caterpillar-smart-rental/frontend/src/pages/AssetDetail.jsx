@@ -6,6 +6,7 @@ import { UtilizationChart } from "../components/UtilizationChart";
 import { AnomalyCard } from "../components/AnomalyCard";
 import { TelemetryPanel } from "../components/TelemetryPanel";
 import { LifecycleTimeline } from "../components/LifecycleTimeline";
+import { CustomerHistory } from "../components/CustomerHistory";
 import { RecommendationPanel } from "../components/RecommendationPanel";
 import { SafetyCoaching } from "../components/SafetyCoaching";
 import { FleetMap } from "../components/FleetMap";
@@ -108,13 +109,14 @@ export function AssetDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 divide-x divide-y divide-ink-faint border-t border-hairline sm:grid-cols-4 sm:divide-y-0 lg:grid-cols-8">
+        <div className="grid grid-cols-2 divide-x divide-y divide-ink-faint border-t border-hairline sm:grid-cols-4 sm:divide-y-0 lg:grid-cols-9">
           <div className="px-4 py-3.5"><Stat label="Utilization" value={`${asset.utilization_pct}%`} tone={utilTone} /></div>
           <div className="px-4 py-3.5"><Stat label="Engine hrs/day" value={asset.engine_hours_per_day} /></div>
           <div className="px-4 py-3.5"><Stat label="Idle hrs/day" value={asset.idle_hours_per_day} tone={asset.idle_hours_per_day >= 10 ? "text-signal-high" : "text-ink"} /></div>
           <div className="px-4 py-3.5"><Stat label="Operating days" value={asset.operating_days} /></div>
           <div className="px-4 py-3.5"><Stat label="Site" value={asset.assignment.site_id ? asset.site_name : "Unassigned"} tone={asset.assignment.site_id ? "text-ink" : "text-signal-high"} /></div>
           <div className="px-4 py-3.5"><Stat label="Operator" value={asset.assignment.operator_id ? asset.operator_name : "Unassigned"} tone={asset.assignment.operator_id ? "text-ink" : "text-signal-high"} /></div>
+          <div className="px-4 py-3.5"><Stat label="Customer" value={asset.assignment.customer ?? "Unassigned"} tone={asset.assignment.customer ? "text-ink" : "text-signal-high"} /></div>
           <div className="px-4 py-3.5"><Stat label="Checkout" value={formatDate(asset.checkout_date)} /></div>
           <div className="px-4 py-3.5"><Stat label="Expected Check-In" value={formatDate(asset.assignment.expected_checkin)} tone={asset.days_overdue != null ? SEVERITY_TEXT.CRITICAL : "text-ink"} /></div>
         </div>
@@ -149,7 +151,10 @@ export function AssetDetail() {
 
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <RecommendationPanel recommendations={asset.recommendations} />
-        <LifecycleTimeline events={asset.events} />
+        <div className="space-y-5">
+          <CustomerHistory events={asset.events} />
+          <LifecycleTimeline events={asset.events} />
+        </div>
       </div>
 
       {asset.recommendations.length > 0 && (

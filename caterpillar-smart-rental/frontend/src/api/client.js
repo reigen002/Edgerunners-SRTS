@@ -135,6 +135,11 @@ function adaptEvent(e) {
     checkin: "Returned to dealership",
     overdue_flagged: "Flagged overdue",
   };
+  // A checkout event is the only one carrying rental commercial context —
+  // resolved from the same knownSites cache adaptAssetSummary uses, so a site
+  // referenced only by a past event (never the asset's current one) can still
+  // come back unresolved on a cold deep-link; falls back to the raw id.
+  const site = e.site_id ? knownSites.get(e.site_id) : null;
   return {
     id: `EV-${e.id}`,
     asset_id: e.asset_id,
@@ -143,6 +148,10 @@ function adaptEvent(e) {
     title: TITLE[e.event_type] ?? e.event_type,
     detail: e.notes ?? "",
     actor: e.performed_by ?? "Dealer Desk",
+    customer_name: e.customer_name ?? null,
+    site_id: e.site_id ?? null,
+    site_name: site?.name ?? e.site_id ?? null,
+    site_address: site?.address ?? null,
   };
 }
 
