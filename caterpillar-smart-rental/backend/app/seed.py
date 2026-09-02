@@ -3,10 +3,40 @@ Seed data — the official dataset from the hackathon spec.
 Run via: POST /admin/seed  or automatically on first startup.
 
 NULL site/operator values are intentional anomalies and preserved exactly.
+Asset data is loaded from data/seed/official_assets.csv so the spec's
+official dataset lives in exactly one place.
 """
-from datetime import datetime, timezone
+import csv
+from datetime import datetime
+from pathlib import Path
 from sqlalchemy.orm import Session
 from app.models import Alert, Asset, Site, Operator, RentalEvent, Telemetry
+
+_ASSETS_CSV = Path(__file__).resolve().parents[2] / "data" / "seed" / "official_assets.csv"
+
+
+def _load_assets() -> list[dict]:
+    with open(_ASSETS_CSV, newline="") as f:
+        rows = list(csv.DictReader(f))
+
+    assets = []
+    for row in rows:
+        assets.append({
+            "id": row["id"],
+            "equipment_type": row["equipment_type"],
+            "site_id": row["site_id"] or None,
+            "operator_id": row["operator_id"] or None,
+            "checkout_date": datetime.fromisoformat(row["checkout_date"].replace("Z", "+00:00")),
+            "expected_return_date": datetime.fromisoformat(row["expected_return_date"].replace("Z", "+00:00")),
+            "engine_hrs_per_day": float(row["engine_hrs_per_day"]),
+            "idle_hrs_per_day": float(row["idle_hrs_per_day"]),
+            "operating_days": int(row["operating_days"]),
+            "status": row["status"],
+            "customer_name": row["customer_name"] or None,
+            "qr_code": row["qr_code"],
+            "rfid_tag": row["rfid_tag"],
+        })
+    return assets
 
 
 SITES = [
@@ -25,72 +55,10 @@ OPERATORS = [
     {"id": "OP114", "name": "Carlos Mendoza",    "license_class": "Medium", "contact": "+63-921-0005"},
 ]
 
-# Official seed data — do not alter the NULL site/operator values
-ASSETS = [
-    {
-        "id": "EQX1001", "equipment_type": "Excavator",
-        "site_id": "S003", "operator_id": "OP101",
-        "checkout_date": datetime(2025, 4, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 16, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 1.5, "idle_hrs_per_day": 10.0, "operating_days": 15,
-        "status": "available", "customer_name": "ABC Construction",
-        "qr_code": "QR-EQX1001", "rfid_tag": "RFID-EQX1001",
-    },
-    {
-        "id": "EQX1002", "equipment_type": "Cater",
-        "site_id": None,           "operator_id": None,       # intentional anomaly
-        "checkout_date": datetime(2025, 3, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 3, 30, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 11.0, "operating_days": 20,
-        "status": "checked_out", "customer_name": None,
-        "qr_code": "QR-EQX1002", "rfid_tag": "RFID-EQX1002",
-    },
-    {
-        "id": "EQX1003", "equipment_type": "Bulldozer",
-        "site_id": "S002", "operator_id": "OP203",
-        "checkout_date": datetime(2025, 2, 15, tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 3, 11, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 7.5, "idle_hrs_per_day": 0.5,  "operating_days": 25,
-        "status": "available", "customer_name": "Delta Mining",
-        "qr_code": "QR-EQX1003", "rfid_tag": "RFID-EQX1003",
-    },
-    {
-        "id": "EQX1004", "equipment_type": "Grader",
-        "site_id": "S004", "operator_id": "OP106",
-        "checkout_date": datetime(2025, 5, 5,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 5, 15, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 2.0, "idle_hrs_per_day": 9.0,  "operating_days": 10,
-        "status": "checked_out", "customer_name": "Metro Roads Inc",
-        "qr_code": "QR-EQX1004", "rfid_tag": "RFID-EQX1004",
-    },
-    {
-        "id": "EQX1005", "equipment_type": "Bulldozer",
-        "site_id": "S006", "operator_id": "OP301",
-        "checkout_date": datetime(2025, 1, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 1, 31, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 8.0, "idle_hrs_per_day": 0.0,  "operating_days": 30,
-        "status": "available", "customer_name": "Southworks Ltd",
-        "qr_code": "QR-EQX1005", "rfid_tag": "RFID-EQX1005",
-    },
-    {
-        "id": "EQX1006", "equipment_type": "Grader",
-        "site_id": "S001", "operator_id": "OP114",
-        "checkout_date": datetime(2025, 4, 5,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 23, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 3.0, "idle_hrs_per_day": 6.0,  "operating_days": 18,
-        "status": "available", "customer_name": "City Contractors",
-        "qr_code": "QR-EQX1006", "rfid_tag": "RFID-EQX1006",
-    },
-    {
-        "id": "EQX1007", "equipment_type": "Excavator",
-        "site_id": None,           "operator_id": None,       # intentional anomaly
-        "checkout_date": datetime(2025, 3, 20, tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 1,  tzinfo=timezone.utc),
-        "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 12.0, "operating_days": 12,
-        "status": "checked_out", "customer_name": None,
-        "qr_code": "QR-EQX1007", "rfid_tag": "RFID-EQX1007",
-    },
-]
+# Snapshot for import-time inspection (e.g. tests). seed_database() and
+# _seed_lifecycle_events() call _load_assets() fresh each time so
+# POST /admin/reset always reflects the current CSV on disk.
+ASSETS = _load_assets()
 
 
 def _seed_lifecycle_events(db: Session) -> None:
@@ -103,7 +71,7 @@ def _seed_lifecycle_events(db: Session) -> None:
     from app.clock import get_demo_now
     demo_now = get_demo_now()
 
-    for a in ASSETS:
+    for a in _load_assets():
         asset_id = a["id"]
         if db.query(RentalEvent).filter(RentalEvent.asset_id == asset_id).first():
             continue
@@ -153,7 +121,7 @@ def seed_database(db: Session) -> dict:
 
     db.flush()  # ensure FKs exist before asset insert
 
-    for a in ASSETS:
+    for a in _load_assets():
         if not db.get(Asset, a["id"]):
             db.add(Asset(**a))
             counts["assets"] += 1
