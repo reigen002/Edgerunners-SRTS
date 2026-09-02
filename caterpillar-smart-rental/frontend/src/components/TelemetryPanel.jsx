@@ -55,14 +55,27 @@ function Gauge({ label, value, unit, warn }) {
   );
 }
 
-export function TelemetryPanel({ frames, onFrame, onRunScenario }) {
+export function TelemetryPanel({ frames, onFrame, onRunScenario, runToken }) {
   const [i, setI] = useState(frames.length ? frames.length - 1 : 0);
   const [playing, setPlaying] = useState(false);
   const timer = useRef(null);
+  const framesRef = useRef(frames);
+  framesRef.current = frames;
 
   useEffect(() => {
     setI(frames.length ? frames.length - 1 : 0);
   }, [frames]);
+
+  // A scenario just ran (runToken bumped only after the reload landed, so
+  // framesRef is already the fresh set) — replay it from the start instead of
+  // sitting on the last frame, so "Run Scenario" visibly does something.
+  useEffect(() => {
+    if (runToken && framesRef.current.length > 0) {
+      setI(0);
+      setPlaying(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runToken]);
 
   useEffect(() => {
     if (!playing) return;

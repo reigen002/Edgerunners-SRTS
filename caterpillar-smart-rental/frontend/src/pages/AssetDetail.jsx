@@ -30,10 +30,15 @@ export function AssetDetail() {
   const [currentFrame, setCurrentFrame] = useState(null);
   const [modal, setModal] = useState(null);
   const [error, setError] = useState(null);
+  const [runToken, setRunToken] = useState(0);
 
+  // Awaitable: callers that need the reload actually finished (handleRunScenario
+  // keeps its button/select disabled until this resolves) rely on it, not just
+  // on `load()` having been called.
   const load = useCallback(() => {
-    api.getAsset(id).then(setAsset).catch((e) => setError(e.status === 404 ? `Asset ${id} not found.` : e.message || "Failed to load asset."));
-    api.getTelemetry(id).then((r) => setTelemetry(r.frames));
+    const assetLoaded = api.getAsset(id).then(setAsset).catch((e) => setError(e.status === 404 ? `Asset ${id} not found.` : e.message || "Failed to load asset."));
+    const telemetryLoaded = api.getTelemetry(id).then((r) => setTelemetry(r.frames));
+    return Promise.all([assetLoaded, telemetryLoaded]);
   }, [id]);
 
   useEffect(() => { setAsset(null); setError(null); load(); }, [load]);
@@ -62,7 +67,8 @@ export function AssetDetail() {
   async function handleRunScenario(scenario) {
     await api.simulate(id, scenario);
     await api.refreshAlerts();
-    load();
+    await load();
+    setRunToken((t) => t + 1);
   }
 
   const trace = telemetry.length ? telemetry.map((f) => [f.lat, f.lon]) : null;
@@ -102,7 +108,7 @@ export function AssetDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 divide-x divide-y divide-hairline border-t border-hairline sm:grid-cols-4 sm:divide-y-0 lg:grid-cols-8">
+        <div className="grid grid-cols-2 divide-x divide-y divide-ink-faint border-t border-hairline sm:grid-cols-4 sm:divide-y-0 lg:grid-cols-8">
           <div className="px-4 py-3.5"><Stat label="Utilization" value={`${asset.utilization_pct}%`} tone={utilTone} /></div>
           <div className="px-4 py-3.5"><Stat label="Engine hrs/day" value={asset.engine_hours_per_day} /></div>
           <div className="px-4 py-3.5"><Stat label="Idle hrs/day" value={asset.idle_hours_per_day} tone={asset.idle_hours_per_day >= 10 ? "text-signal-high" : "text-ink"} /></div>
@@ -120,7 +126,7 @@ export function AssetDetail() {
         <FleetMap sites={[]} assets={[mapAsset]} trace={trace} />
       </div>
 
-      <TelemetryPanel frames={telemetry} onFrame={onFrame} onRunScenario={handleRunScenario} />
+      <TelemetryPanel frames={telemetry} onFrame={onFrame} onRunScenario={handleRunScenario} runToken={runToken} />
 
       <div>
         <div className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-ink-faint">Anomalies</div>
@@ -141,7 +147,7 @@ export function AssetDetail() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <RecommendationPanel recommendations={asset.recommendations} />
         <LifecycleTimeline events={asset.events} />
       </div>

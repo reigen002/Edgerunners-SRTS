@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { StatusPill, SeverityPill } from "./StatusPill";
-import { SEVERITY_TEXT, SEVERITY_WASH, DISPLAY_THRESHOLDS as T } from "../lib/format";
+import { SEVERITY_TEXT, SEVERITY_WASH, SEVERITY_RANK, DISPLAY_THRESHOLDS as T } from "../lib/format";
 
-const severityRank = { CRITICAL: -1, HIGH: 0, MEDIUM: 1, LOW: 2, null: 3 };
 const columns = [
   { key: "equipment_id", label: "Asset" },
   { key: "type", label: "Type" },
@@ -38,8 +37,8 @@ export function FleetTable({ assets }) {
       let av = a[sortKey];
       let bv = b[sortKey];
       if (sortKey === "highest_severity") {
-        av = severityRank[a.highest_severity];
-        bv = severityRank[b.highest_severity];
+        av = SEVERITY_RANK[a.highest_severity] ?? 3;
+        bv = SEVERITY_RANK[b.highest_severity] ?? 3;
       }
       if (av == null) av = "";
       if (bv == null) bv = "";
@@ -83,7 +82,7 @@ export function FleetTable({ assets }) {
             <tr
               key={a.equipment_id}
               onClick={() => navigate(`/asset/${a.equipment_id}`)}
-              className={`cursor-pointer border-b border-hairline last:border-b-0 hover:bg-panel-raised ${SEVERITY_WASH[a.highest_severity] ?? ""}`}
+              className={`cursor-pointer border-b border-ink-faint last:border-b-0 hover:bg-panel-raised ${SEVERITY_WASH[a.highest_severity] ?? ""}`}
             >
               <td className={`whitespace-nowrap px-3 py-3 font-mono font-semibold ${a.anomaly_count > 0 ? SEVERITY_TEXT[a.highest_severity] : "text-ink"}`}>
                 {a.equipment_id}

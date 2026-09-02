@@ -7,8 +7,7 @@ import { AlertsFeed } from "../components/AlertsFeed";
 import { FleetMap } from "../components/FleetMap";
 import { ForecastPanel } from "../components/ForecastPanel";
 import { RecommendationPanel } from "../components/RecommendationPanel";
-
-const severityRank = { CRITICAL: -1, HIGH: 0, MEDIUM: 1, LOW: 2 };
+import { SEVERITY_RANK, isAllocationRec } from "../lib/format";
 
 export function Dashboard() {
   const [assets, setAssets] = useState(null);
@@ -49,14 +48,14 @@ export function Dashboard() {
   // named destination), so it leads over a same-severity asset that's a
   // dead-end alert with no follow-on business decision.
   const allocationAssetIds = new Set(
-    recommendations.filter((r) => r.issue?.startsWith("Forecast demand gap")).map((r) => r.asset_id)
+    recommendations.filter(isAllocationRec).map((r) => r.asset_id)
   );
   const heroAsset = [...assets]
     .filter((a) => a.highest_severity)
     .sort((a, b) => {
       const allocDiff = (allocationAssetIds.has(b.equipment_id) ? 1 : 0) - (allocationAssetIds.has(a.equipment_id) ? 1 : 0);
       if (allocDiff) return allocDiff;
-      return (severityRank[a.highest_severity] - severityRank[b.highest_severity]) || (b.anomaly_count - a.anomaly_count);
+      return (SEVERITY_RANK[a.highest_severity] - SEVERITY_RANK[b.highest_severity]) || (b.anomaly_count - a.anomaly_count);
     })[0];
   const heroRecommendation = heroAsset
     ? recommendations.find((r) => r.asset_id === heroAsset.equipment_id)

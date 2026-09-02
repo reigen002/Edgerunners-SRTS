@@ -7,7 +7,7 @@
 // mounted at the root (e.g. http://localhost:8000/assets).
 import * as engine from "../mock/engine";
 import { DEMO_NOW, OFFICIAL_ASSETS } from "../mock/seed";
-import { REAL_DEMO_NOW, DISPLAY_THRESHOLDS } from "../lib/format";
+import { REAL_DEMO_NOW, DISPLAY_THRESHOLDS, SEVERITY_RANK } from "../lib/format";
 
 const USE_MOCK = import.meta.env.VITE_API_MODE === "mock";
 const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
@@ -47,8 +47,6 @@ function rememberReferenceData(detail) {
 // Field renames and derived display buckets only — every value is sourced
 // from the backend response, nothing is fabricated or re-detected.
 // ---------------------------------------------------------------------------
-
-const SEVERITY_RANK = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
 
 function productiveRatioPct(engineHrsPerDay, idleHrsPerDay) {
   const total = engineHrsPerDay + idleHrsPerDay;

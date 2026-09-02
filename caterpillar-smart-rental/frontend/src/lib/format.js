@@ -48,12 +48,14 @@ export const SEVERITY_BORDER = {
   LOW: "border-hairline",
 };
 
-// Subtle row/panel wash reserved for HIGH/CRITICAL only — never a full-card wash.
+// Row/panel wash, one step per tier so CRITICAL/HIGH/MEDIUM/LOW are each
+// perceptibly different (a flat 5-6% on only the top two tiers reads as
+// "no wash at all" against the dark panel).
 export const SEVERITY_WASH = {
-  CRITICAL: "bg-signal-critical/[0.06]",
-  HIGH: "bg-signal-high/[0.05]",
-  MEDIUM: "",
-  LOW: "",
+  CRITICAL: "bg-signal-critical/[0.14]",
+  HIGH: "bg-signal-high/[0.10]",
+  MEDIUM: "bg-signal-medium/[0.07]",
+  LOW: "bg-signal-low/[0.05]",
 };
 
 export const SEVERITY_TEXT = {
@@ -62,6 +64,18 @@ export const SEVERITY_TEXT = {
   MEDIUM: "text-signal-medium",
   LOW: "text-signal-low",
 };
+
+// CRITICAL first. Used to sort any list of severity-bearing items
+// (recommendations, assets) so the worst item leads.
+export const SEVERITY_RANK = { CRITICAL: -1, HIGH: 0, MEDIUM: 1, LOW: 2 };
+
+// A recommendation is either "what to do with the fleet" (allocation) or
+// "what went wrong" (anomaly) — the backend doesn't tag this, so both call
+// sites keyed off the same issue-text prefix. Centralized here so the check
+// can't drift between them.
+export function isAllocationRec(r) {
+  return !!r.issue?.startsWith("Forecast demand gap");
+}
 
 // Mirrors the backend's fixed clock (app/clock.py DEMO_NOW_DEFAULT). The
 // backend never exposes it on an endpoint, so date-relative UI logic

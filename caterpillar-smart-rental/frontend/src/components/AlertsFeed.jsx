@@ -34,7 +34,7 @@ export function AlertsFeed({ alerts }) {
           <p className="px-4 py-5 text-sm text-ink-faint">No active alerts.</p>
         )}
         {high.length > 0 && (
-          <ul className="divide-y divide-hairline">
+          <ul className="divide-y divide-ink-faint">
             {high.map((a) => <AlertRow key={a.id} a={a} navigate={navigate} prominent />)}
           </ul>
         )}
@@ -43,7 +43,7 @@ export function AlertsFeed({ alerts }) {
             <div className="border-t border-hairline px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
               Lower priority
             </div>
-            <ul className="divide-y divide-hairline">
+            <ul className="divide-y divide-ink-faint">
               {rest.map((a) => <AlertRow key={a.id} a={a} navigate={navigate} />)}
             </ul>
           </>
